@@ -47,8 +47,6 @@ public class UserEntity {
         google
     }
 
-    // Getters and setters
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
