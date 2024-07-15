@@ -1,84 +1,73 @@
 package com.qnelldo.plantour.mission.controller;
 
-import com.qnelldo.plantour.mission.dto.MissionDto;
+import com.qnelldo.plantour.enums.Season;
+import com.qnelldo.plantour.mission.dto.MissionCompletionRequest;
+import com.qnelldo.plantour.mission.dto.UserMissionProgressDto;
 import com.qnelldo.plantour.mission.entity.MissionEntity;
 import com.qnelldo.plantour.mission.service.MissionService;
+import com.qnelldo.plantour.mission.entity.MissionCompletionEntity;
+import com.qnelldo.plantour.mission.service.MissionCompletionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/missions")
+@Tag(name = "미션 컨트롤러", description = "미션 관리 및 완료 처리")
 public class MissionController {
 
     private final MissionService missionService;
+    private final MissionCompletionService missionCompletionService;
 
     @Autowired
-    public MissionController(MissionService missionService) {
+    public MissionController(MissionService missionService, MissionCompletionService missionCompletionService) {
         this.missionService = missionService;
+        this.missionCompletionService = missionCompletionService;
     }
 
-    @PostMapping
-    public ResponseEntity<MissionEntity> createMission(@RequestBody MissionEntity mission) {
-        MissionEntity createdMission = missionService.createMission(mission);
-        return ResponseEntity.ok(createdMission);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<MissionEntity> getMission(@PathVariable Long id) {
-        return missionService.getMissionById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/current")
+    public ResponseEntity<List<MissionEntity>> getCurrentSeasonMissions() {
+        return ResponseEntity.ok(missionService.getCurrentSeasonMissions());
     }
 
     @GetMapping
-    public ResponseEntity<List<MissionEntity>> getAllMissions() {
-        List<MissionEntity> missions = missionService.getAllMissions();
-        return ResponseEntity.ok(missions);
+    public ResponseEntity<List<MissionEntity>> getMissionsBySeason(@RequestParam(required = false) Season season) {
+        if (season == null) {
+            season = missionService.getCurrentSeason();
+        }
+        return ResponseEntity.ok(missionService.getMissionsBySeason(season));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MissionEntity> updateMission(@PathVariable Long id, @RequestBody MissionEntity mission) {
-        mission.setId(id);
-        MissionEntity updatedMission = missionService.updateMission(mission);
-        return ResponseEntity.ok(updatedMission);
+    @GetMapping("/{id}")
+    public ResponseEntity<MissionEntity> getMissionById(@PathVariable Long id) {
+        return ResponseEntity.ok(missionService.getMissionById(id));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMission(@PathVariable Long id) {
-        missionService.deleteMission(id);
-        return ResponseEntity.ok().build();
+    @GetMapping("/progress/{userId}")
+    public ResponseEntity<UserMissionProgressDto> getUserMissionProgress(@PathVariable Long userId) {
+        UserMissionProgressDto progress = missionCompletionService.getUserMissionProgress(userId);
+        return ResponseEntity.ok(progress);
     }
 
-    @GetMapping("/nearby")
-    public ResponseEntity<List<MissionDto>> getNearbyMissions(
-            @RequestParam Double latitude,
-            @RequestParam Double longitude,
-            @RequestParam(defaultValue = "10.0") Double radius) {
-        List<MissionEntity> missions = missionService.findMissionsNearby(latitude, longitude, radius);
-        List<MissionDto> missionDto = missions.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(missionDto);
-    }
-
-    private MissionDto convertToDto(MissionEntity mission) {
-        return new MissionDto(
-                mission.getId(),
-                mission.getName(),
-                mission.getDescription(),
-                mission.getLatitude(),
-                mission.getLongitude()
-                // 필요한 다른 필드들...
-        );
-    }
-
-    @GetMapping("/by-plant/{plantId}")
-    public ResponseEntity<List<MissionEntity>> getMissionsByPlant(@PathVariable Long plantId) {
-        List<MissionEntity> missions = missionService.findMissionsByPlant(plantId);
-        return ResponseEntity.ok(missions);
+    @PostMapping("/complete")
+    public ResponseEntity<?> completeMissionPuzzle(@RequestBody MissionCompletionRequest request) {
+        try {
+            MissionCompletionEntity completedMission = missionCompletionService.completeMissionPuzzle(
+                    request.getUserId(),
+                    request.getMissionId(),
+                    request.getPuzzleNumber(),
+                    request.getPlantId(),
+                    request.getContent(),
+                    request.getImage(),
+                    request.getLatitude(),
+                    request.getLongitude()
+            );
+            return ResponseEntity.ok(completedMission);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }

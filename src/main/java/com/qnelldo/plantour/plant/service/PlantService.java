@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PlantService {
@@ -18,39 +17,11 @@ public class PlantService {
         this.plantRepository = plantRepository;
     }
 
-    public PlantEntity savePlant(PlantEntity plant) {
-        return plantRepository.save(plant);
-    }
-
-    public Optional<PlantEntity> getPlantById(Long id) {
-        return plantRepository.findById(id);
-    }
-
     public List<PlantEntity> getAllPlants() {
         return plantRepository.findAll();
     }
 
-    public void deletePlant(Long id) {
-        plantRepository.deleteById(id);
-    }
-
-    public List<PlantEntity> getPlantsByName(String name) {
-        return plantRepository.findByName(name);
-    }
-
-    public List<PlantEntity> getPlantsByScientificName(String scientificName) {
-        return plantRepository.findByScientificName(scientificName);
-    }
-
-    public List<PlantEntity> getPlantsByBestSeason(PlantEntity.Season season) {
-        return plantRepository.findByBestSeason(season);
-    }
-
-    public List<PlantEntity> getPlantsByCharacteristic(String characteristic) {
-        return plantRepository.findByCharacteristic(characteristic);
-    }
-
-    public List<PlantEntity> getPlantsByMissionId(Long missionId) {
-        return plantRepository.findByMissionId(missionId);
+    public PlantEntity getPlantById(Long id) {
+        return plantRepository.findById(id).orElseThrow(() -> new RuntimeException("Plant not found"));
     }
 }
