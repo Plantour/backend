@@ -62,10 +62,11 @@ public class MissionCompletionService {
     }
 
     private CompletedPuzzleInfo mapToCompletedPuzzleInfo(MissionCompletionEntity userMission) {
+        String languageCode = userRepository.findLanguageCodeByEmail(userMission.getUser().getEmail());
         return new CompletedPuzzleInfo(
                 userMission.getPuzzleNumber(),
                 userMission.getPlant().getId(),
-                userMission.getPlant().getName(),
+                userMission.getPlant().getName().get(languageCode),
                 userMission.getCompletedAt()
         );
     }

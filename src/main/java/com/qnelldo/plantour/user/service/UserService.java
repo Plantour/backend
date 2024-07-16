@@ -3,15 +3,34 @@ package com.qnelldo.plantour.user.service;
 import com.qnelldo.plantour.user.dto.UserRegistrationDto;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 //import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     // private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    /**
+     * 사용자의 언어 설정을 변경합니다.
+     * @param userId 사용자 ID
+     * @param languageCode 변경할 언어 코드
+     * @return 업데이트된 UserEntity
+     */
+
+    public UserEntity updateUserLanguage(Long userId, String languageCode) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        user.setLanguageCode(languageCode);
+        return userRepository.save(user);
+    }
+
 
     public UserEntity registerUser(UserRegistrationDto registrationDto) {
         if (userRepository.existsByEmail(registrationDto.getEmail())) {

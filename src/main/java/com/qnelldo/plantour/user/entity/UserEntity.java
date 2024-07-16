@@ -35,6 +35,9 @@ public class UserEntity {
     @Column(name = "email_verified")
     private Boolean emailVerified = false;
 
+    @Column(name = "language_code", nullable = false)
+    private String languageCode = "KOR";  // 기본 언어를 한국어로 설정
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
