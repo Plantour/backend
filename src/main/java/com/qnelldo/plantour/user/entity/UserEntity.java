@@ -16,9 +16,6 @@ public class UserEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = true)  // 구글 로그인 사용자는 비밀번호가 없을 수 있음
-    private String password;
-
     @Column(nullable = false)
     private String name;
 
@@ -36,7 +33,7 @@ public class UserEntity {
     private Boolean emailVerified = false;
 
     @Column(name = "language_code", nullable = false)
-    private String languageCode = "KOR";  // 기본 언어를 한국어로 설정
+    private String languageCode = "KOR";
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -44,9 +41,10 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    // 기존의 password 필드 제거
+
     // Enum for auth provider
     public enum AuthProvider {
-        local,
         google
     }
 
