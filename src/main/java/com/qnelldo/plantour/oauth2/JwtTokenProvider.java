@@ -1,11 +1,13 @@
 package com.qnelldo.plantour.oauth2;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.Date;
 
 @Component
@@ -13,11 +15,14 @@ public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    @Value("${SECRET_KEY}")
-    private String jwtSecret;
+    private final Key key;
+    private final int jwtExpirationInMs;
 
-    @Value("3600000")
-    private int jwtExpirationInMs;
+    public JwtTokenProvider(@Value("${SECRET_KEY}") String jwtSecret,
+                            @Value("${JWT_EXPIRATION:3600000}") int jwtExpirationInMs) {
+        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        this.jwtExpirationInMs = jwtExpirationInMs;
+    }
 
     public String createToken(Long userId) {
         Date now = new Date();
@@ -25,15 +30,16 @@ public class JwtTokenProvider {
 
         return Jwts.builder()
                 .setSubject(Long.toString(userId))
-                .setIssuedAt(new Date())
+                .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, jwtSecret)
+                .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     public Long getUserIdFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(jwtSecret)
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
 
@@ -42,18 +48,10 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(authToken);
             return true;
-        } catch (SignatureException ex) {
-            logger.error("유효하지 않은 JWT 서명입니다.");
-        } catch (MalformedJwtException ex) {
-            logger.error("유효하지 않은 JWT 토큰입니다.");
-        } catch (ExpiredJwtException ex) {
-            logger.error("만료된 JWT 토큰입니다.");
-        } catch (UnsupportedJwtException ex) {
-            logger.error("지원되지 않는 JWT 토큰입니다.");
-        } catch (IllegalArgumentException ex) {
-            logger.error("JWT 클레임 문자열이 비어 있습니다.");
+        } catch (JwtException | IllegalArgumentException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
         }
         return false;
     }

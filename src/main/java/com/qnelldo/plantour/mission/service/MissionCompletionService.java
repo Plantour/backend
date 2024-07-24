@@ -2,6 +2,7 @@ package com.qnelldo.plantour.mission.service;
 
 import com.qnelldo.plantour.enums.Season;
 import com.qnelldo.plantour.mission.entity.MissionEntity;
+import com.qnelldo.plantour.mission.entity.MissionPlantEntity;
 import com.qnelldo.plantour.mission.repository.MissionRepository;
 import com.qnelldo.plantour.mission.dto.CompletedPuzzleInfo;
 import com.qnelldo.plantour.mission.dto.UserMissionProgressDto;
@@ -45,9 +46,11 @@ public class MissionCompletionService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         Season currentSeason = missionService.getCurrentSeason();
+        MissionEntity currentMission = missionRepository.findBySeason(currentSeason)
+                .orElseThrow(() -> new RuntimeException("현재 계절의 미션을 찾을 수 없습니다."));
 
         List<MissionCompletionEntity> completions = missionCompletionRepository
-                .findByUserIdAndMissionSeason(userId, currentSeason);
+                .findByUserAndMission(user, currentMission);
 
         List<CompletedPuzzleInfo> completedPuzzles = completions.stream()
                 .map(this::mapToCompletedPuzzleInfo)
@@ -86,9 +89,24 @@ public class MissionCompletionService {
         PlantEntity plant = plantRepository.findById(plantId)
                 .orElseThrow(() -> new RuntimeException("식물을 찾을 수 없습니다."));
 
-        // 이미 완료된 퍼즐인지 확인
+        // 퍼즐 번호 유효성 검사
+        if (puzzleNumber < 1 || puzzleNumber > 9) {
+            throw new IllegalArgumentException("퍼즐 번호는 1부터 9 사이여야 합니다.");
+        }
+
+        // 해당 미션에 속한 식물인지 확인
+        if (mission.getMissionPlants().stream().noneMatch(mp -> mp.getPlant().getId().equals(plantId))) {
+            throw new RuntimeException("이 식물은 현재 미션에 속하지 않습니다.");
+        }
+
+        // 이미 이 식물로 퍼즐을 완성했는지 확인
+        if (missionCompletionRepository.existsByUserAndMissionAndPlant(user, mission, plant)) {
+            throw new RuntimeException("이 식물로 이미 퍼즐을 완성했습니다.");
+        }
+
+        // 이미 완성된 퍼즐 위치인지 확인
         if (missionCompletionRepository.existsByUserAndMissionAndPuzzleNumber(user, mission, puzzleNumber)) {
-            throw new RuntimeException("이미 완료된 퍼즐입니다.");
+            throw new RuntimeException("이미 완성된 퍼즐 위치입니다.");
         }
 
         MissionCompletionEntity completion = new MissionCompletionEntity();
@@ -101,10 +119,6 @@ public class MissionCompletionService {
         completion.setLatitude(latitude);
         completion.setLongitude(longitude);
         completion.setCompletedAt(LocalDateTime.now());
-
-        // 미션의 완성된 퍼즐 수 증가
-        mission.completePuzzle();
-        missionRepository.save(mission);
 
         return missionCompletionRepository.save(completion);
     }

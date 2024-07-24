@@ -18,8 +18,8 @@ public class PlantEntity {
     @Column(columnDefinition = "TEXT")
     private String nameJson;
 
-    @Lob
-    private String image; // BASE64 encoded image
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @Column(columnDefinition = "TEXT")
     private String characteristics1Json;

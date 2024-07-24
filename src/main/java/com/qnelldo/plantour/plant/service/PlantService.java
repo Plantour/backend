@@ -56,7 +56,7 @@ public class PlantService {
         PlantDto dto = new PlantDto();
         dto.setId(plant.getId());
         dto.setName(plant.getName().getOrDefault(languageCode, plant.getName().get("ENG")));
-        dto.setImage(plant.getImage());
+        dto.setImage(plant.getImageUrl());
         dto.setCharacteristics1(plant.getCharacteristics1().getOrDefault(languageCode, plant.getCharacteristics1().get("ENG")));
         dto.setCharacteristics2(plant.getCharacteristics2().getOrDefault(languageCode, plant.getCharacteristics2().get("ENG")));
         dto.setCharacteristics3(plant.getCharacteristics3().getOrDefault(languageCode, plant.getCharacteristics3().get("ENG")));
