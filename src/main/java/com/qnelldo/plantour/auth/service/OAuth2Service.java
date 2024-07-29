@@ -1,7 +1,7 @@
-package com.qnelldo.plantour.oauth2;
+package com.qnelldo.plantour.auth.service;
 
-import com.qnelldo.plantour.oauth2.dto.GoogleUserInfo;
-import com.qnelldo.plantour.oauth2.dto.TokenResponse;
+import com.qnelldo.plantour.auth.dto.GoogleUserInfo;
+import com.qnelldo.plantour.auth.dto.TokenResponse;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

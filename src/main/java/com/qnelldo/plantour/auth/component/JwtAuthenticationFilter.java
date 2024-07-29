@@ -1,5 +1,6 @@
-package com.qnelldo.plantour.oauth2;
+package com.qnelldo.plantour.auth.component;
 
+import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

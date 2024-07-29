@@ -1,4 +1,4 @@
-package com.qnelldo.plantour.enums;
+package com.qnelldo.plantour.common.enums;
 
 import java.util.Arrays;
 import java.util.List;

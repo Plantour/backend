@@ -1,11 +1,10 @@
 package com.qnelldo.plantour.mission.repository;
 
-import com.qnelldo.plantour.enums.Season;
+import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.mission.entity.MissionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository

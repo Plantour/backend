@@ -1,6 +1,6 @@
 package com.qnelldo.plantour.mission.entity;
 
-import com.qnelldo.plantour.enums.Season;
+import com.qnelldo.plantour.common.enums.Season;
 import jakarta.persistence.*;
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.qnelldo.plantour.oauth2;
+package com.qnelldo.plantour.auth.dto;
 
 import com.qnelldo.plantour.user.entity.UserEntity;
 import org.springframework.security.core.GrantedAuthority;

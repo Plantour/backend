@@ -1,6 +1,6 @@
 package com.qnelldo.plantour.mission.service;
 
-import com.qnelldo.plantour.enums.Season;
+import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.mission.entity.MissionEntity;
 import com.qnelldo.plantour.mission.repository.MissionRepository;
 import com.qnelldo.plantour.plant.entity.PlantEntity;

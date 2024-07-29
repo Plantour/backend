@@ -1,6 +1,6 @@
 package com.qnelldo.plantour.plant.repository;
 
-import com.qnelldo.plantour.enums.Season;
+import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.plant.entity.PlantEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

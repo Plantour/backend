@@ -1,4 +1,4 @@
-package com.qnelldo.plantour.util;
+package com.qnelldo.plantour.common.util;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

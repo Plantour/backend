@@ -1,4 +1,4 @@
-package com.qnelldo.plantour.exception;
+package com.qnelldo.plantour.common.exception;
 
 public class EmailAlreadyExistsException extends RuntimeException {
     public EmailAlreadyExistsException(String message) {

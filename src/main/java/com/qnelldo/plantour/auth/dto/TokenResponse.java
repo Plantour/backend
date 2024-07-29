@@ -1,4 +1,4 @@
-package com.qnelldo.plantour.oauth2.dto;
+package com.qnelldo.plantour.auth.dto;
 
 import lombok.Data;
 

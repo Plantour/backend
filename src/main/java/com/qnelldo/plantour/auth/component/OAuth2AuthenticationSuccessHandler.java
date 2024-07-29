@@ -1,5 +1,7 @@
-package com.qnelldo.plantour.oauth2;
+package com.qnelldo.plantour.auth.component;
 
+import com.qnelldo.plantour.auth.dto.CustomOAuth2User;
+import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.user.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,20 +41,26 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         Object principal = authentication.getPrincipal();
-        String token;
+        String accessToken;
+        String refreshToken;
+        Long userId;
 
         if (principal instanceof DefaultOidcUser) {
             DefaultOidcUser oidcUser = (DefaultOidcUser) principal;
-            token = tokenProvider.createToken(Long.parseLong(oidcUser.getSubject())); // 적절한 토큰 생성 로직 적용
+            userId = Long.parseLong(oidcUser.getSubject());
         } else if (principal instanceof CustomOAuth2User) {
             CustomOAuth2User oAuth2User = (CustomOAuth2User) principal;
-            token = tokenProvider.createToken(oAuth2User.getId());
+            userId = oAuth2User.getId();
         } else {
-            throw new IllegalStateException("Unexpected user type: " + principal.getClass().getName());
+            throw new IllegalStateException("예상치 못한 사용자 유형: " + principal.getClass().getName());
         }
 
+        accessToken = tokenProvider.createAccessToken(userId);
+        refreshToken = tokenProvider.createRefreshToken(userId);
+
         return UriComponentsBuilder.fromUriString("http://localhost:5173/oauth2/redirect")
-                .queryParam("token", token)
+                .queryParam("accessToken", accessToken)
+                .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
     }
 }

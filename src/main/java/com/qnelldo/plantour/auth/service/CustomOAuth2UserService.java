@@ -1,6 +1,6 @@
-package com.qnelldo.plantour.oauth2.service;
+package com.qnelldo.plantour.auth.service;
 
-import com.qnelldo.plantour.oauth2.CustomOAuth2User;
+import com.qnelldo.plantour.auth.dto.CustomOAuth2User;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.service.UserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;

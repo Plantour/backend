@@ -1,7 +1,7 @@
 package com.qnelldo.plantour.mission.dto;
 
 
-import com.qnelldo.plantour.enums.Season;
+import com.qnelldo.plantour.common.enums.Season;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,8 @@
-package com.qnelldo.plantour.config;
+package com.qnelldo.plantour.common.config;
 
-import com.qnelldo.plantour.oauth2.OAuth2AuthenticationSuccessHandler;
-import com.qnelldo.plantour.oauth2.service.CustomOAuth2UserService;
-import com.qnelldo.plantour.oauth2.JwtAuthenticationFilter;
+import com.qnelldo.plantour.auth.component.OAuth2AuthenticationSuccessHandler;
+import com.qnelldo.plantour.auth.service.CustomOAuth2UserService;
+import com.qnelldo.plantour.auth.component.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
