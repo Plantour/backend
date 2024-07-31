@@ -1,9 +1,9 @@
 package com.qnelldo.plantour.plant.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.Map;
 

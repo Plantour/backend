@@ -1,9 +1,13 @@
 package com.qnelldo.plantour.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -41,7 +45,9 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // 기존의 password 필드 제거
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestCompletionEntity> questCompletions = new ArrayList<>();
 
     // Enum for auth provider
     public enum AuthProvider {
@@ -56,5 +62,17 @@ public class UserEntity {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // Helper method to add a quest completion
+    public void addQuestCompletion(QuestCompletionEntity questCompletion) {
+        questCompletions.add(questCompletion);
+        questCompletion.setUser(this);
+    }
+
+    // Helper method to remove a quest completion
+    public void removeQuestCompletion(QuestCompletionEntity questCompletion) {
+        questCompletions.remove(questCompletion);
+        questCompletion.setUser(null);
     }
 }

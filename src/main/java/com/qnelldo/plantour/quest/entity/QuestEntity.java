@@ -1,16 +1,20 @@
-package com.qnelldo.plantour.mission.entity;
+package com.qnelldo.plantour.quest.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.qnelldo.plantour.common.enums.Season;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 @Entity
-@Table(name = "missions")
-@Data
-public class MissionEntity {
+@Table(name = "quests")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class QuestEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,16 +24,11 @@ public class MissionEntity {
     @Enumerated(EnumType.STRING)
     private Season season;
 
-    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MissionPlantEntity> missionPlants = new ArrayList<>();
+    @OneToMany(mappedBy = "quest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestPlantEntity> questPlants = new ArrayList<>();
 
     @Column(name = "completed_puzzles")
     private int completedPuzzles = 0;
-
-//    public void addPlant(PlantEntity plant, int puzzleNumber) {
-//        MissionPlantEntity missionPlant = new MissionPlantEntity(this, plant, puzzleNumber);
-//        missionPlants.add(missionPlant);
-//    }
 
     public boolean completePuzzle() {
         if (completedPuzzles < 9) {

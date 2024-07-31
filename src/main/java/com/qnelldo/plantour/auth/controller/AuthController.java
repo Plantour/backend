@@ -1,21 +1,20 @@
 package com.qnelldo.plantour.auth.controller;
 
-import com.qnelldo.plantour.auth.service.JwtTokenProvider;
-import com.qnelldo.plantour.auth.service.OAuth2Service;
 import com.qnelldo.plantour.auth.dto.AuthResponse;
 import com.qnelldo.plantour.auth.dto.RefreshTokenRequest;
-import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.auth.entity.RefreshToken;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.qnelldo.plantour.auth.service.JwtTokenProvider;
+import com.qnelldo.plantour.auth.service.OAuth2Service;
+import com.qnelldo.plantour.user.entity.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Map;
 
 @RestController
@@ -26,7 +25,6 @@ public class AuthController {
     private final JwtTokenProvider tokenProvider;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    @Autowired
     public AuthController(OAuth2Service oAuth2Service, JwtTokenProvider tokenProvider) {
         this.oAuth2Service = oAuth2Service;
         this.tokenProvider = tokenProvider;

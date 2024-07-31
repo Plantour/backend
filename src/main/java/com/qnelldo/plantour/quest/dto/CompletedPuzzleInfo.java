@@ -1,4 +1,4 @@
-package com.qnelldo.plantour.mission.dto;
+package com.qnelldo.plantour.quest.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

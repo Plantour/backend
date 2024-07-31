@@ -1,4 +1,4 @@
-package com.qnelldo.plantour.mission.dto;
+package com.qnelldo.plantour.quest.dto;
 
 
 import com.qnelldo.plantour.common.enums.Season;
@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserMissionProgressDto {
+public class UserQuestProgressDto {
     private Long userId;
     private String username;
     private Season currentSeason;
