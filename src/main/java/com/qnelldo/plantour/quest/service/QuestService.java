@@ -4,6 +4,7 @@ import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.quest.dto.QuestCompletionResponse;
 import com.qnelldo.plantour.quest.entity.QuestEntity;
 import com.qnelldo.plantour.quest.repository.QuestRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,6 +23,11 @@ public class QuestService {
         this.questCompletionService = questCompletionService;
         this.questRepository = questRepository;
     }
+
+
+    @Value("${app.base-url}")
+    private String baseUrl;
+
 
     public QuestEntity getQuestBySeason(Season season) {
         return questRepository.findBySeason(season)
@@ -57,6 +63,8 @@ public class QuestService {
                     questCompletionData.put("longitude", questCompletion.getLongitude());
                     questCompletionData.put("puzzleNumber", questCompletion.getPuzzleNumber());
                     questCompletionData.put("plantId", questCompletion.getPlant().getId());
+                    questCompletionData.put("imageData", baseUrl + "/api/quests/image/" + questCompletion.getId());
+
                     return questCompletionData;
                 })
                 .collect(Collectors.toList());

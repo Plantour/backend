@@ -9,6 +9,7 @@ import com.qnelldo.plantour.quest.service.QuestService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/quests")
 @Tag(name = "퀘스트 컨트롤러", description = "퀘스트 관리 및 완료 처리")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://4b11-218-233-42-240.ngrok-free.app"}, maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://f940-218-233-42-240.ngrok-free.app"}, maxAge = 3600)
 public class QuestController {
     private static final Logger logger = LoggerFactory.getLogger(QuestController.class);
 
@@ -50,6 +51,18 @@ public class QuestController {
         logger.info("퀘스트 데이터 조회 결과: {}", response);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getQuestImage(@PathVariable Long id) {
+        QuestCompletionEntity questCompletion = questCompletionService.getQuestCompletionById(id);
+        if (questCompletion != null && questCompletion.getImageData() != null) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(questCompletion.getImageData());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 

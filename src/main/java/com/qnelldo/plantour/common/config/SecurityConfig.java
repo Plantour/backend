@@ -61,7 +61,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/", "/api/auth/**", "/oauth2/**", "/login/oauth2/code/*",
-                                "/api/missions/current", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                "api/quests/image/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/quests/complete").authenticated()  // 명시적으로 인증 요구
                         .anyRequest().authenticated()
                 )

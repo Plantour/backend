@@ -42,6 +42,11 @@ public class QuestCompletionService {
         return questCompletionRepository.findByUserIdAndQuestSeason(userId, season);
     }
 
+    public QuestCompletionEntity getQuestCompletionById(Long id) {
+        return questCompletionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("완료된 퀘스트를 찾을 수 없습니다"));
+    }
+
 
     public QuestCompletionEntity completeQuestPuzzle(
             Long userId, Long questId, int puzzleNumber, Long plantId,
