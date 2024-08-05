@@ -23,11 +23,11 @@ public class PlantController {
         this.plantService = plantService;
     }
 
-    @PreAuthorize("isAuthenticated()")
+//    @PreAuthorize("isAuthenticated()")
     @GetMapping
-    public ResponseEntity<List<PlantDto>> getAllPlants(@RequestParam Long userId) {
-        logger.info("Fetching all plants for user: {}", userId);
-        return ResponseEntity.ok(plantService.getAllPlants(userId));
+    public ResponseEntity<List<PlantDto>> getAllPlants() {
+        logger.info("Fetching all plants for user: {}");
+        return ResponseEntity.ok(plantService.getAllPlants());
     }
 
     @PreAuthorize("isAuthenticated()")

@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-public class AuthController {
+public class    AuthController {
 
     private final OAuth2Service oAuth2Service;
     private final JwtTokenProvider tokenProvider;

@@ -2,6 +2,7 @@ package com.qnelldo.plantour.quest.controller;
 
 import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.common.enums.Season;
+import com.qnelldo.plantour.quest.dto.NearbyQuestDTO;
 import com.qnelldo.plantour.quest.dto.QuestCompletionResponse;
 import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
 import com.qnelldo.plantour.quest.service.QuestCompletionService;
@@ -9,7 +10,6 @@ import com.qnelldo.plantour.quest.service.QuestService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +18,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/quests")
 @Tag(name = "퀘스트 컨트롤러", description = "퀘스트 관리 및 완료 처리")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://f940-218-233-42-240.ngrok-free.app"}, maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://269e-218-233-42-240.ngrok-free.app"}, maxAge = 3600)
 public class QuestController {
     private static final Logger logger = LoggerFactory.getLogger(QuestController.class);
 
@@ -63,6 +64,18 @@ public class QuestController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<Map<String,List<NearbyQuestDTO>>> getNearbyQuests(
+            @RequestParam double latitude,
+            @RequestParam double longitude) {
+
+        double radiusKm = 1.0;
+
+        Map<String, List<NearbyQuestDTO>> response = questService.getNearbyQuests(latitude, longitude, radiusKm);
+
+        return ResponseEntity.ok(response);
     }
 
 

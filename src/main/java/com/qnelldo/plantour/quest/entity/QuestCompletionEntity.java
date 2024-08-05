@@ -6,6 +6,8 @@ import com.qnelldo.plantour.user.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.locationtech.spatial4j.shape.Point;
+import org.locationtech.spatial4j.shape.impl.PointImpl;
 
 import java.time.LocalDateTime;
 
@@ -46,4 +48,5 @@ public class QuestCompletionEntity {
     @Lob
     @Column(name = "image_data", columnDefinition="LONGBLOB")
     private byte[] imageData;
+
 }

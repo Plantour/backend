@@ -25,15 +25,15 @@ public class PlantService {
 
     /**
      * 모든 식물 정보를 사용자의 언어 설정에 맞춰 조회합니다.
-     * @param userId 사용자 ID
+//     * @param userId 사용자 ID
      * @return 식물 정보 리스트
      */
-    public List<PlantDto> getAllPlants(Long userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
-        String languageCode = user.getLanguageCode();
+    public List<PlantDto> getAllPlants() {
+//        UserEntity user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+//        String languageCode = user.getLanguageCode();
         return plantRepository.findAll().stream()
-                .map(plant -> convertToDto(plant, languageCode))
+                .map(plant -> convertToDto(plant, "ENG"))
                 .collect(Collectors.toList());
     }
 

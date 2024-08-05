@@ -3,8 +3,6 @@ package com.qnelldo.plantour.quest.service;
 import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.plant.entity.PlantEntity;
 import com.qnelldo.plantour.plant.repository.PlantRepository;
-import com.qnelldo.plantour.quest.dto.CompletedPuzzleInfo;
-import com.qnelldo.plantour.quest.dto.UserQuestProgressDto;
 import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
 import com.qnelldo.plantour.quest.entity.QuestEntity;
 import com.qnelldo.plantour.quest.repository.QuestCompletionRepository;
@@ -16,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class QuestCompletionService {

@@ -1,13 +1,19 @@
 package com.qnelldo.plantour.quest.service;
 
 import com.qnelldo.plantour.common.enums.Season;
+import com.qnelldo.plantour.quest.dto.NearbyQuestDTO;
 import com.qnelldo.plantour.quest.dto.QuestCompletionResponse;
+import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
 import com.qnelldo.plantour.quest.entity.QuestEntity;
+import com.qnelldo.plantour.quest.repository.QuestCompletionRepository;
 import com.qnelldo.plantour.quest.repository.QuestRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,13 +23,15 @@ import java.util.stream.Collectors;
 public class QuestService {
 
     private final QuestRepository questRepository;
+    private final QuestCompletionRepository questCompletionRepository;
     private final QuestCompletionService questCompletionService;
 
-    public QuestService(QuestRepository questRepository, QuestCompletionService questCompletionService) {
+    public QuestService(QuestRepository questRepository, QuestCompletionService questCompletionService, QuestCompletionRepository questCompletionRepository) {
+        this.questCompletionRepository = questCompletionRepository;
         this.questCompletionService = questCompletionService;
         this.questRepository = questRepository;
     }
-
+    private static final Logger logger = LoggerFactory.getLogger(QuestService.class);
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -94,4 +102,27 @@ public class QuestService {
         result.put("plants", plants);
         return result;
     }
+
+    public Map<String, List<NearbyQuestDTO>> getNearbyQuests(double latitude, double longitude, double radiusKm) {
+        List<QuestCompletionEntity> nearbyQuests =
+                questCompletionRepository.findNearbyQuests(latitude, longitude, radiusKm);
+
+        List<NearbyQuestDTO> questDTOs = nearbyQuests.stream()
+                .map(quest -> new NearbyQuestDTO(
+                        quest.getId(),
+                        quest.getContent(),
+                        quest.getLatitude(),
+                        quest.getLongitude(),
+                        quest.getCompletedAt(),
+                        baseUrl + "/api/quests/image/" + quest.getId(),
+                        quest.getUser().getId(),
+                        quest.getUser().getName(),
+                        quest.getPlant().getId(),
+                        quest.getPlant().getName().get("ENG")
+                ))
+                .collect(Collectors.toList());
+
+        return Collections.singletonMap("nearbyQuests", questDTOs);
+    }
 }
+

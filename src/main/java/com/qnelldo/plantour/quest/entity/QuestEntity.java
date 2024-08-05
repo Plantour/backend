@@ -27,17 +27,4 @@ public class QuestEntity {
     @OneToMany(mappedBy = "quest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestPlantEntity> questPlants = new ArrayList<>();
 
-    @Column(name = "completed_puzzles")
-    private int completedPuzzles = 0;
-
-    public boolean completePuzzle() {
-        if (completedPuzzles < 9) {
-            completedPuzzles++;
-        }
-        return completedPuzzles == 9;
-    }
-
-    public int getCompletedPuzzlesCount() {
-        return completedPuzzles;
-    }
 }
