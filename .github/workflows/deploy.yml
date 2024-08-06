@@ -33,7 +33,7 @@ jobs:
         run: ./gradlew build -x test
 
       - name: Prepare SSH key
-        run: echo "${{ secrets.EC2_PEM }}" > key.pem
+        run: echo "${{ secrets.EC2_PEM }}" | base64 --decode > key.pem
 
       - name: Add execute permissions to the key
         run: chmod 600 key.pem
@@ -43,14 +43,10 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_PEM }}
-          port: ${{ secrets.SSH_PORT }}
+          key: key.pem
 
       - name: Copy files via SCP
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-        run: scp -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
+        run: scp -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/
 
       - name: Deploy to EC2
         env:
