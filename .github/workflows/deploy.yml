@@ -34,7 +34,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: "./build/libs/plantour.jar"
-          target: "/home/${{ secrets.EC2_USER }}/plantour.jar"
+          target: "${{ secrets.EC2_USER }}:/path/to/deployment/plantour.jar"
 
       - name: Execute remote SSH commands
         uses: appleboy/ssh-action@master
