@@ -32,32 +32,20 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
-      - name: Debug EC2 connection
-        env:
-            EC2_HOST: ${{ secrets.EC2_HOST }}
-            EC2_USER: ${{ secrets.EC2_USER }}
-        run: |
-          echo "EC2_USER: ${EC2_USER}"
-          echo "Connecting to: ${EC2_USER}@${EC2_HOST}"
-          echo "Connecting to: ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}"
-          if [ -n "${EC2_HOST}" ]; then
-           ping -c 4 ${EC2_HOST}
-          else
-            echo "EC2_HOST is not set"
-          fi
-
       - name: Copy files via SCP
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
+          PEM_KEY: ${{ secrets.EC2_PEM }}
         run: |
           echo "${{ secrets.EC2_PEM }}" > key.pem
           chmod 600 key.pem
-          scp -v -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
-
+          scp -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
 
       - name: Deploy to EC2
         env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
           RDS_HOSTNAME: ${{ secrets.RDS_HOSTNAME }}
           RDS_PORT: ${{ secrets.RDS_PORT }}
           RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
