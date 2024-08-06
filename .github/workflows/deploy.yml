@@ -19,20 +19,20 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      - name: Cache Gradle packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-
       - name: Build with Gradle
         run: ./gradlew build -x test
 
-      - name: Deploy to EC2
+      - name: Copy files via SCP
+        uses: appleboy/scp-action@v0.1.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PEM }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "./build/libs/plantour.jar"
+          target: "/home/${{ secrets.EC2_USER }}/plantour.jar"
+
+      - name: Execute remote SSH commands
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
