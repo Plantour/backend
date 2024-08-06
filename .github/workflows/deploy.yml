@@ -1,20 +1,22 @@
-name: Plantour Deploy
+name: Build and Deploy to EC2
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
-          java-version: '17'
           distribution: 'adopt'
+          java-version: '17'
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
@@ -22,38 +24,84 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
-      - name: Deploy to EC2
-        env:
-          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          HOST: ${{ secrets.EC2_HOST }}
-          USER: ${{ secrets.EC2_USER }}
+      - name: Prepare SSH key
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          scp -o StrictHostKeyChecking=no -i private_key ./build/libs/plantour-*.jar ${USER}@${HOST}:~/plantour.jar
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            pid=$(pgrep -f "java -jar plantour.jar" || echo "")
-            if [ ! -z "$pid" ]; then
-              kill $pid
-            fi
-            nohup java -jar ~/plantour.jar > ~/plantour.log 2>&1 &
-          '
-          rm -f private_key
+          echo "${{ secrets.EC2_SSH_KEY }}" > key.pem
+          chmod 600 key.pem
 
-      - name: Check deployment
-        env:
-          HOST: ${{ secrets.EC2_HOST }}
-          PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          USER: ${{ secrets.EC2_USER }}
+      - name: Set SSH Port
         run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} '
-            if pgrep -f "java -jar plantour.jar" > /dev/null
-            then
-              echo "Plantour application is running."
-              exit 0
-            else
-              echo "Plantour application is not running."
-              exit 1
-            fi
-          '
-          rm -f private_key
+          if [ -n "${{ secrets.SSH_PORT }}" ]; then
+            echo "${{ secrets.SSH_PORT }}" > ssh_port.txt
+          else
+            echo "22" > ssh_port.txt
+          fi
+
+      - name: Debug SSH connection
+        run: |
+          SSH_PORT=$(cat ssh_port.txt)
+          ssh -i key.pem -p $SSH_PORT -o StrictHostKeyChecking=no -vvv ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} "echo Connection successful"
+
+      - name: Copy files via rsync
+        run: |
+          SSH_PORT=$(cat ssh_port.txt)
+          rsync -avz -e "ssh -i key.pem -p $SSH_PORT -o StrictHostKeyChecking=no" ./build/libs/plantour.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/plantour.jar
+
+      - name: Execute remote SSH commands
+        env:
+          RDS_HOSTNAME: ${{ secrets.RDS_HOSTNAME }}
+          RDS_PORT: ${{ secrets.RDS_PORT }}
+          RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
+          RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+        run: |
+          SSH_PORT=$(cat ssh_port.txt)
+          ssh -i key.pem -p $SSH_PORT -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+            sudo systemctl stop plantour || true
+            sudo mv /home/${{ secrets.EC2_USER }}/plantour.jar /path/to/deployment/plantour.jar
+          
+            # 환경 변수 설정
+            sudo tee /etc/systemd/system/plantour.service > /dev/null << EOT
+            [Unit]
+            Description=Plantour Spring Boot Application
+            After=network.target
+
+            [Service]
+            User=${{ secrets.EC2_USER }}
+            ExecStart=/usr/bin/java -jar /path/to/deployment/plantour.jar
+            EnvironmentFile=/etc/environment
+            Restart=always
+
+            [Install]
+            WantedBy=multi-user.target
+            EOT
+
+            # 환경 변수 파일 업데이트
+            sudo tee -a /etc/environment > /dev/null << EOT
+            RDS_HOSTNAME=$RDS_HOSTNAME
+            RDS_PORT=$RDS_PORT
+            RDS_DB_NAME=$RDS_DB_NAME
+            RDS_USERNAME=$RDS_USERNAME
+            RDS_PASSWORD=$RDS_PASSWORD
+            SECRET_KEY=$SECRET_KEY
+            GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
+            GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI
+            BASE_URL=$BASE_URL
+            CORS_ALLOWED_ORIGINS=$CORS_ALLOWED_ORIGINS
+            EOT
+
+            sudo systemctl daemon-reload
+            sudo systemctl enable plantour
+            sudo systemctl start plantour
+            sudo systemctl status plantour
+          EOF
+
+      - name: Clean up
+        run: rm key.pem ssh_port.txt
