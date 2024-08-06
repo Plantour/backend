@@ -25,18 +25,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
-      - name: Prepare SSH key
-        run: echo "${{ secrets.EC2_PEM }}" | base64 --decode > key.pem
-
-      - name: Add execute permissions to the key
-        run: chmod 600 key.pem
-
       - name: Copy files via SCP
         uses: appleboy/scp-action@v0.1.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: key.pem
+          key: ${{ secrets.EC2_PEM }}
           port: ${{ secrets.SSH_PORT }}
           source: "./build/libs/plantour.jar"
           target: "/home/${{ secrets.EC2_USER }}/plantour.jar"
@@ -46,7 +40,7 @@ jobs:
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
-          key: key.pem
+          key: ${{ secrets.EC2_PEM }}
           port: ${{ secrets.SSH_PORT }}
           script: |
             export RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
