@@ -10,10 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -53,7 +50,6 @@ public class    AuthController {
         }
     }
 
-
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
         String requestRefreshToken = refreshTokenRequest.getRefreshToken();
@@ -68,4 +64,21 @@ public class    AuthController {
                 })
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
     }
+
+    @GetMapping("/check-token")
+    public ResponseEntity<Map<String, Boolean>> checkToken(@RequestHeader("Authorization") String token) {
+        // "Bearer " 접두사가 있을 경우 제거
+
+        logger.info("Checking token: {}", token);
+
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        boolean isValid = tokenProvider.validateToken(token);
+        logger.info("Token is valid: {}", isValid);
+        return ResponseEntity.ok(Map.of("valid", isValid));
+    }
+
+
 }

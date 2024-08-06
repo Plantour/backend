@@ -25,7 +25,7 @@ public class PlantNoteService {
     private final PlantNoteRepository plantNoteRepository;
     private final UserRepository userRepository;
 
-    @Value("${app.base-url}")
+    @Value("${spring.app.base-url}")
     private String baseUrl;
 
     public PlantNoteService(PlantNoteRepository plantNoteRepository, UserRepository userRepository) {

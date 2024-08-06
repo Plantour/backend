@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/plant-notes")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174", "https://269e-218-233-42-240.ngrok-free.app"}, maxAge = 3600)
+@CrossOrigin(origins = "${spring.web.cors.allowed-origins}", maxAge = 3600)
 public class PlantNoteController {
     private static final Logger logger = LoggerFactory.getLogger(PlantNoteController.class);
 

@@ -33,7 +33,7 @@ public class QuestService {
     }
     private static final Logger logger = LoggerFactory.getLogger(QuestService.class);
 
-    @Value("${app.base-url}")
+    @Value("${spring.app.base-url}")
     private String baseUrl;
 
 

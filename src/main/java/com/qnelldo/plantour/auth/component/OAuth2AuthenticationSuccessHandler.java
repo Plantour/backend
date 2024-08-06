@@ -58,7 +58,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         accessToken = tokenProvider.createAccessToken(userId);
         refreshToken = tokenProvider.createRefreshToken(userId);
 
-        return UriComponentsBuilder.fromUriString("http://localhost:5173/oauth2/redirect")
+        return UriComponentsBuilder.fromUriString("${spring.security.oauth2.client.registration.google.redirect-uri}")
                 .queryParam("accessToken", accessToken)
                 .queryParam("refreshToken", refreshToken)
                 .build().toUriString();
