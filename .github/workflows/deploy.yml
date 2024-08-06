@@ -31,6 +31,9 @@ jobs:
       - name: Add execute permissions to the key
         run: chmod 600 key.pem
 
+      - name: Check SSH Port value
+        run: echo "SSH Port: ${{ secrets.SSH_PORT }}"
+
       - name: Copy files via rsync
         run: |
           rsync -avz -e "ssh -i key.pem -p ${{ secrets.SSH_PORT }}" ./build/libs/plantour.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/plantour.jar
