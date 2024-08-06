@@ -32,13 +32,23 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
+      - name: Debug EC2 connection
+        env:
+            EC2_HOST: ${{ secrets.EC2_HOST }}
+            EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          echo "Connecting to: ${EC2_USER}@${EC2_HOST}"
+          ping -c 4 ${EC2_HOST}
+
       - name: Copy files via SCP
         env:
-          EC2_PEM: ${{ secrets.EC2_PEM }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          echo "$EC2_PEM" > key.pem
+          echo "${{ secrets.EC2_PEM }}" > key.pem
           chmod 600 key.pem
-          scp -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/
+          scp -v -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
+
 
       - name: Deploy to EC2
         env:
