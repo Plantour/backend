@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,20 +32,29 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
-      - name: Copy files via SCP
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-          PEM_KEY: ${{ secrets.EC2_PEM }}
-        run: |
-          echo "${{ secrets.EC2_PEM }}" > key.pem
-          chmod 600 key.pem
-          scp -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Deploy to EC2
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
+          PEM_KEY: ${{ secrets.EC2_PEM }}
+        run: |
+          echo "${PEM_KEY}" > key.pem
+          chmod 600 key.pem
+          scp -v -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/plantour.jar
+
+      - name: Restart Application on EC2
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          PEM_KEY: ${{ secrets.EC2_PEM }}
           RDS_HOSTNAME: ${{ secrets.RDS_HOSTNAME }}
           RDS_PORT: ${{ secrets.RDS_PORT }}
           RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
@@ -58,7 +67,7 @@ jobs:
           BASE_URL: ${{ secrets.BASE_URL }}
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i key.pem ${EC2_USER}@${EC2_HOST} << 'EOF'
             export RDS_HOSTNAME=${RDS_HOSTNAME}
             export RDS_PORT=${RDS_PORT}
             export RDS_DB_NAME=${RDS_DB_NAME}
@@ -71,6 +80,6 @@ jobs:
             export BASE_URL=${BASE_URL}
             export CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
             sudo systemctl stop plantour
-            sudo mv /home/${{ secrets.EC2_USER }}/plantour.jar /path/to/deployment/plantour.jar
+            sudo mv /home/${EC2_USER}/plantour.jar /path/to/deployment/plantour.jar
             sudo systemctl start plantour
           EOF
