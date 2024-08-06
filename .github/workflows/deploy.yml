@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,23 +33,21 @@ jobs:
         run: ./gradlew build -x test
 
       - name: Prepare SSH key
-        run: echo "${{ secrets.EC2_PEM }}" | base64 --decode > key.pem
+        run: echo "${{ secrets.EC2_PEM }}" > key.pem
 
       - name: Add execute permissions to the key
         run: chmod 600 key.pem
 
-      - name: Establish SSH connection
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: key.pem
-
       - name: Copy files via SCP
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
         run: scp -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/
 
       - name: Deploy to EC2
         env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
           RDS_HOSTNAME: ${{ secrets.RDS_HOSTNAME }}
           RDS_PORT: ${{ secrets.RDS_PORT }}
           RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
