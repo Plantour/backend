@@ -6,7 +6,7 @@
 - [x] UserRepository 구현
 - [x] UserService 구현
 - [x] UserController 구현
-- [ ] ~~Security Config 설정~~ (현재 주석 처리됨)
+- [ ] ~~Security Config 설정~~ 
 
 ### 미션 시스템
 - [x] MissionEntity 설계
@@ -82,4 +82,3 @@
 
 5. 환경 설정
    - 개발, 테스트, 프로덕션 환경별 설정 파일 분리 필요
-

@@ -1,9 +1,13 @@
 package com.qnelldo.plantour.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -15,9 +19,6 @@ public class UserEntity {
 
     @Column(nullable = false, unique = true)
     private String email;
-
-    @Column(nullable = true)  // 구글 로그인 사용자는 비밀번호가 없을 수 있음
-    private String password;
 
     @Column(nullable = false)
     private String name;
@@ -35,15 +36,21 @@ public class UserEntity {
     @Column(name = "email_verified")
     private Boolean emailVerified = false;
 
+    @Column(name = "language_code", nullable = false)
+    private String languageCode = "KOR";
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonBackReference
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuestCompletionEntity> questCompletions = new ArrayList<>();
+
     // Enum for auth provider
     public enum AuthProvider {
-        local,
         google
     }
 
@@ -55,5 +62,17 @@ public class UserEntity {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // Helper method to add a quest completion
+    public void addQuestCompletion(QuestCompletionEntity questCompletion) {
+        questCompletions.add(questCompletion);
+        questCompletion.setUser(this);
+    }
+
+    // Helper method to remove a quest completion
+    public void removeQuestCompletion(QuestCompletionEntity questCompletion) {
+        questCompletions.remove(questCompletion);
+        questCompletion.setUser(null);
     }
 }
