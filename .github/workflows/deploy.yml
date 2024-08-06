@@ -30,6 +30,7 @@ jobs:
         run: |
           echo "$PRIVATE_KEY" > private_key
           chmod 600 private_key
+          mkdir -p ~/.ssh
           ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
           scp -i private_key ./build/libs/plantour-*.jar $USER@$HOST:/path/to/deployment/plantour.jar
           ssh -i private_key $USER@$HOST << EOF
