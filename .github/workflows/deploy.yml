@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,8 +32,16 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
       - name: Prepare SSH key
-        run: echo "${{ secrets.EC2_PEM }}" | base64 --decode > key.pem
+        run: echo "${{ secrets.EC2_PEM }}" > key.pem
 
       - name: Add execute permissions to the key
         run: chmod 600 key.pem
@@ -42,35 +50,30 @@ jobs:
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
-        run: scp -o StrictHostKeyChecking=no -i key.pem ./build/libs/plantour.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/
+          PEM_KEY: ${{ secrets.EC2_PEM }}
+          SSH_PORT: ${{ secrets.EC2_SSH_PORT }}
+        run: |
+          scp -o StrictHostKeyChecking=no -i key.pem -P $SSH_PORT ./build/libs/plantour.jar ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/
 
       - name: Deploy to EC2
-        env:
-          RDS_HOSTNAME: ${{ secrets.RDS_HOSTNAME }}
-          RDS_PORT: ${{ secrets.RDS_PORT }}
-          RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
-          RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
-          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
-          SECRET_KEY: ${{ secrets.SECRET_KEY }}
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
-          BASE_URL: ${{ secrets.BASE_URL }}
-          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            export RDS_HOSTNAME=${RDS_HOSTNAME}
-            export RDS_PORT=${RDS_PORT}
-            export RDS_DB_NAME=${RDS_DB_NAME}
-            export RDS_USERNAME=${RDS_USERNAME}
-            export RDS_PASSWORD=${RDS_PASSWORD}
-            export SECRET_KEY=${SECRET_KEY}
-            export GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-            export GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-            export GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}
-            export BASE_URL=${BASE_URL}
-            export CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PEM }}
+          port: ${{ secrets.EC2_SSH_PORT }}
+          script: |
+            export RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
+            export RDS_PORT=${{ secrets.RDS_PORT }}
+            export RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}
+            export RDS_USERNAME=${{ secrets.RDS_USERNAME }}
+            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+            export SECRET_KEY=${{ secrets.SECRET_KEY }}
+            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            export GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
+            export BASE_URL=${{ secrets.BASE_URL }}
+            export CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
             sudo systemctl stop plantour
             sudo mv /home/${{ secrets.EC2_USER }}/plantour.jar /path/to/deployment/plantour.jar
             sudo systemctl start plantour
-          EOF
