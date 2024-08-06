@@ -54,6 +54,11 @@ dependencies {
     testRuntimeOnly 'com.h2database:h2'
 }
 
+test {
+    useJUnitPlatform()
+    systemProperty 'spring.profiles.active', 'test'
+}
+
 tasks.named('test') {
     outputs.dir snippetsDir
     useJUnitPlatform()
@@ -64,11 +69,3 @@ tasks.named('asciidoctor') {
     dependsOn test
 }
 
-test {
-    useJUnitPlatform()
-    systemProperty 'spring.profiles.active', 'test'
-}
-
-bootRun {
-    systemProperty 'spring.profiles.active', 'test'
-}
