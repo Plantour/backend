@@ -32,7 +32,8 @@ jobs:
         run: chmod 600 key.pem
 
       - name: Check SSH Port value
-        run: echo "SSH Port: ${{ secrets.SSH_PORT }}"
+        run: |
+          echo "SSH Port: ${{ secrets.SSH_PORT }}"
 
       - name: Copy files via rsync
         run: |
