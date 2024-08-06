@@ -8,6 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: plantour_backend  # 실제 환경 이름으로 변경하세요
 
     steps:
       - name: Checkout code
