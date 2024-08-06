@@ -26,37 +26,45 @@ jobs:
         run: ./gradlew build -x test
 
       - name: Prepare SSH key
-        run: echo "${{ secrets.EC2_PEM }}" > key.pem
+        run: echo "${{secrets.EC2_PEM}}" > key.pem
 
       - name: Add execute permissions to the key
         run: chmod 600 key.pem
 
       - name: Check SSH Port value
         run: |
-          echo "SSH Port: ${{ secrets.SSH_PORT }}"
+          echo "SSH Port: ${{secrets.SSH_PORT}}"
+          if [ -z "${{secrets.SSH_PORT}}" ]; then
+            echo "SSH_PORT is not set, defaulting to 22"
+            echo "22" > ssh_port.txt
+          else
+            echo "${{secrets.SSH_PORT}}" > ssh_port.txt
+          fi
 
       - name: Copy files via rsync
         run: |
-          rsync -avz -e "ssh -i key.pem -p ${{ secrets.SSH_PORT }}" ./build/libs/plantour.jar ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/home/${{ secrets.EC2_USER }}/plantour.jar
+          SSH_PORT=$(cat ssh_port.txt)
+          rsync -avz -e "ssh -i key.pem -p $SSH_PORT" ./build/libs/plantour.jar ${{secrets.EC2_USER}}@${{secrets.EC2_HOST}}:/home/${{secrets.EC2_USER}}/plantour.jar
 
       - name: Execute remote SSH commands
         run: |
-          ssh -i key.pem -p ${{ secrets.SSH_PORT }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            export RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
-            export RDS_PORT=${{ secrets.RDS_PORT }}
-            export RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}
-            export RDS_USERNAME=${{ secrets.RDS_USERNAME }}
-            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
-            export SECRET_KEY=${{ secrets.SECRET_KEY }}
-            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            export GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-            export BASE_URL=${{ secrets.BASE_URL }}
-            export CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
+          SSH_PORT=$(cat ssh_port.txt)
+          ssh -i key.pem -p $SSH_PORT ${{secrets.EC2_USER}}@${{secrets.EC2_HOST}} << 'EOF'
+            export RDS_HOSTNAME=${{secrets.RDS_HOSTNAME}}
+            export RDS_PORT=${{secrets.RDS_PORT}}
+            export RDS_DB_NAME=${{secrets.RDS_DB_NAME}}
+            export RDS_USERNAME=${{secrets.RDS_USERNAME}}
+            export RDS_PASSWORD=${{secrets.RDS_PASSWORD}}
+            export SECRET_KEY=${{secrets.SECRET_KEY}}
+            export GOOGLE_CLIENT_ID=${{secrets.GOOGLE_CLIENT_ID}}
+            export GOOGLE_CLIENT_SECRET=${{secrets.GOOGLE_CLIENT_SECRET}}
+            export GOOGLE_REDIRECT_URI=${{secrets.GOOGLE_REDIRECT_URI}}
+            export BASE_URL=${{secrets.BASE_URL}}
+            export CORS_ALLOWED_ORIGINS=${{secrets.CORS_ALLOWED_ORIGINS}}
             sudo systemctl stop plantour
-            sudo mv /home/${{ secrets.EC2_USER }}/plantour.jar /path/to/deployment/plantour.jar
+            sudo mv /home/${{secrets.EC2_USER}}/plantour.jar /path/to/deployment/plantour.jar
             sudo systemctl start plantour
           EOF
 
       - name: Clean up
-        run: rm key.pem
+        run: rm key.pem ssh_port.txt
