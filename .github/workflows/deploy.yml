@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: plantour_backend  # 실제 환경 이름으로 변경하세요
+    environment: plantour_backend
 
     steps:
       - name: Checkout code
@@ -26,6 +26,9 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
 
+      - name: Debug - List build directory
+        run: ls -R ./build/libs
+
       - name: Copy files via SCP
         uses: appleboy/scp-action@master
         with:
@@ -33,8 +36,9 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "./build/libs/plantour.jar"
-          target: "${{ secrets.EC2_USER }}:/path/to/deployment/plantour.jar"
+          source: "./build/libs/*.jar"
+          target: "/home/${{ secrets.EC2_USER }}"
+          strip_components: 2
 
       - name: Execute remote SSH commands
         uses: appleboy/ssh-action@master
@@ -44,17 +48,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            export RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}
-            export RDS_PORT=${{ secrets.RDS_PORT }}
-            export RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}
-            export RDS_USERNAME=${{ secrets.RDS_USERNAME }}
-            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
-            export SECRET_KEY=${{ secrets.SECRET_KEY }}
-            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            export GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-            export BASE_URL=${{ secrets.BASE_URL }}
-            export CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
-            sudo systemctl stop plantour
-            sudo mv /home/${{ secrets.EC2_USER }}/plantour.jar /path/to/deployment/plantour.jar
+            export RDS_HOSTNAME="${{ secrets.RDS_HOSTNAME }}"
+            export RDS_PORT="${{ secrets.RDS_PORT }}"
+            export RDS_DB_NAME="${{ secrets.RDS_DB_NAME }}"
+            export RDS_USERNAME="${{ secrets.RDS_USERNAME }}"
+            export RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
+            export SECRET_KEY="${{ secrets.SECRET_KEY }}"
+            export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
+            export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            export GOOGLE_REDIRECT_URI="${{ secrets.GOOGLE_REDIRECT_URI }}"
+            export BASE_URL="${{ secrets.BASE_URL }}"
+            export CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}"
+            sudo systemctl stop plantour || true
+            sudo mv /home/${{ secrets.EC2_USER }}/*.jar /opt/plantour/plantour.jar
             sudo systemctl start plantour
+            sudo systemctl status plantour
