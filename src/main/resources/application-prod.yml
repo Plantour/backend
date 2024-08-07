@@ -52,5 +52,12 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
 
+  management:
+    endpoint:
+      shutdown: enabled=true
+      web:
+        exposure: include=shutdown
+
+
 
 
