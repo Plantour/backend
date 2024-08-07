@@ -39,7 +39,9 @@ public class    AuthController {
 
         try {
             String accessToken = oAuth2Service.getAccessToken(code);
+            logger.info("Obtained access token from Google");
             UserEntity user = oAuth2Service.getUserInfo(accessToken);
+            logger.info("Retrieved user info: {}", user);
             String jwt = tokenProvider.createAccessToken(user.getId());
             String refreshToken = tokenProvider.createRefreshToken(user.getId());
             return ResponseEntity.ok(new AuthResponse(jwt, refreshToken));
