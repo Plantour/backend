@@ -103,7 +103,7 @@ public class SecurityConfig {
                 .build();
     }
     @Value("${spring.web.cors.allowed-origins}")
-    private String[] allowedOrigins;
+    private String allowedOrigins;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
