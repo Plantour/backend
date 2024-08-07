@@ -22,7 +22,7 @@ spring:
 
   web:
     cors:
-      allowed-origins: ${CORS_ALLOWED_ORIGINS}
+      allowed-origins: "*"
       allowed-methods: GET,POST,PUT,DELETE
       allowed-headers: "*"
       allow-credentials: true
