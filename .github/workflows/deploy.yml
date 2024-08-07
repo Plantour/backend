@@ -25,31 +25,37 @@ jobs:
           chmod +x ./gradlew
           ./gradlew build -x test
 
-      - name: Copy files and execute commands via SSH
+      - name: Deploy to EC2
         uses: appleboy/ssh-action@master
         env:
-          JAR_FILE: plantour.jar
           APP_DIR: /opt/plantour
+          JAR_FILE: plantour.jar
           SERVICE_FILE: /etc/systemd/system/plantour.service
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          envs: JAR_FILE,APP_DIR,SERVICE_FILE
+          envs: APP_DIR,JAR_FILE,SERVICE_FILE
           script: |
-            # 애플리케이션 디렉토리 생성 (없는 경우에만)
+            # Disable strict host key checking
+            mkdir -p ~/.ssh
+            echo "StrictHostKeyChecking no" >> ~/.ssh/config
+            
+            # Create application directory
             sudo mkdir -p $APP_DIR
             sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_DIR
 
-            # JAR 파일 복사 및 권한 설정
-            scp ${{ github.workspace }}/build/libs/*.jar ${{ secrets.EC2_USER }}@localhost:$APP_DIR/$JAR_FILE
+            # Copy JAR file
+            scp -o StrictHostKeyChecking=no ${{ github.workspace }}/build/libs/*.jar ${{ secrets.EC2_USER }}@localhost:$APP_DIR/$JAR_FILE
+            
+            # Set correct permissions
             sudo chown root:root $APP_DIR/$JAR_FILE
             sudo chmod 644 $APP_DIR/$JAR_FILE
 
-            # 서비스 파일이 없는 경우에만 생성
-            if [ ! -f "$SERVICE_FILE" ]; then
-              sudo tee $SERVICE_FILE > /dev/null << EOT
+            # Remove existing service file and create a new one
+            sudo rm -f $SERVICE_FILE
+            sudo tee $SERVICE_FILE > /dev/null << EOT
             [Unit]
             Description=Plantour Spring Boot Application
             After=network.target
@@ -73,10 +79,9 @@ jobs:
             [Install]
             WantedBy=multi-user.target
             EOT
-              sudo systemctl daemon-reload
-            fi
 
-            # 서비스 재시작 및 상태 확인
+            # Reload systemd, restart service, and check status
+            sudo systemctl daemon-reload
             sudo systemctl restart plantour
             sudo systemctl status plantour
 
