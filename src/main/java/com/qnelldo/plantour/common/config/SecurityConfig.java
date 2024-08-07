@@ -102,11 +102,13 @@ public class SecurityConfig {
                 .clientName("Google")
                 .build();
     }
+    @Value("${spring.web.cors.allowed-origins}")
+    private String[] allowedOrigins;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("${spring.web.cors.allowed-origins}"));
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
