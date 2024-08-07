@@ -38,23 +38,18 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           envs: APP_DIR,JAR_FILE,SERVICE_FILE
           script: |
-            # Disable strict host key checking
-            mkdir -p ~/.ssh
-            echo "StrictHostKeyChecking no" >> ~/.ssh/config
-            
-            # Create application directory
+            # 애플리케이션 디렉토리 생성 및 권한 설정
             sudo mkdir -p $APP_DIR
             sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_DIR
-
-            # Copy JAR file
-            scp -o StrictHostKeyChecking=no ${{ github.workspace }}/build/libs/*.jar ${{ secrets.EC2_USER }}@localhost:$APP_DIR/$JAR_FILE
             
-            # Set correct permissions
-            sudo chown root:root $APP_DIR/$JAR_FILE
-            sudo chmod 644 $APP_DIR/$JAR_FILE
-
-            # Remove existing service file and create a new one
-            sudo rm -f $SERVICE_FILE
+            # JAR 파일 복사
+            scp -o StrictHostKeyChecking=no ${{ github.workspace }}/build/libs/*.jar $APP_DIR/$JAR_FILE
+            
+            # JAR 파일 권한 설정
+            sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_DIR/$JAR_FILE
+            sudo chmod 755 $APP_DIR/$JAR_FILE
+            
+            # 서비스 파일 생성
             sudo tee $SERVICE_FILE > /dev/null << EOT
             [Unit]
             Description=Plantour Spring Boot Application
@@ -80,9 +75,11 @@ jobs:
             WantedBy=multi-user.target
             EOT
 
-            # Reload systemd, restart service, and check status
+            # systemd 재로드 및 서비스 재시작
             sudo systemctl daemon-reload
             sudo systemctl restart plantour
+            
+            # 서비스 상태 확인
             sudo systemctl status plantour
 
       - name: Check deployment
