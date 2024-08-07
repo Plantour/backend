@@ -9,6 +9,7 @@ spring:
       key-store: classpath:keystore.p12
       key-store-password: ${KEY_STORE_PASSWORD}
       key-store-type: PKCS12
+      enabled-protocols: TLSv1.2,TLSv1.3
       key-alias: tomcat
 
   app:
