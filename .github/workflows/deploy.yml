@@ -84,6 +84,8 @@ jobs:
             Environment="GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}"
             Environment="BASE_URL=${BASE_URL}"
             Environment="CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}"
+            Environment="KEY_STORE_PASSWORD"="${KEY_STORE_PASSWORD}"
+        
 
             [Install]
             WantedBy=multi-user.target

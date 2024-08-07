@@ -2,6 +2,15 @@ spring:
   application:
     name: PLANTOUR
 
+  server:
+    port: 8443
+    ssl:
+      enabled: true
+      key-store: classpath:keystore.p12
+      key-store-password: ${KEY_STORE_PASSWORD}
+      key-store-type: PKCS12
+      key-alias: tomcat
+
   app:
     base-url: ${BASE_URL}
 
@@ -40,8 +49,15 @@ spring:
     hibernate:
       ddl-auto: update
     properties:
-        hibernate:
-          dialect: org.hibernate.dialect.MySQLDialect
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  management:
+    endpoint:
+      shutdown: enabled=true
+      web:
+        exposure: include=shutdown
+
 
 
 
