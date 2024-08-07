@@ -41,6 +41,9 @@ public class SecurityConfig {
     @Value("${GOOGLE_CLIENT_SECRET}")
     private String googleClientSecret;
 
+    @Value("${GOOGLE_REDIRECT_URI}")
+    private String googleRedirectUri;
+
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService,
                           OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
                           JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -92,7 +95,7 @@ public class SecurityConfig {
                 .clientSecret(googleClientSecret)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .redirectUri("${spring.security.oauth2.client.registration.google.redirect-uri}")
+                .redirectUri(googleRedirectUri)
                 .scope("openid", "profile", "email")
                 .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
                 .tokenUri("https://www.googleapis.com/oauth2/v4/token")
