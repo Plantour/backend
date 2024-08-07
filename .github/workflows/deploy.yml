@@ -20,27 +20,67 @@ jobs:
           distribution: 'adopt'
           java-version: '17'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
-
       - name: Build with Gradle
-        run: ./gradlew build -x test
+        run: |
+          chmod +x ./gradlew
+          ./gradlew build -x test
 
-      - name: Debug - List build directory
-        run: ls -R ./build/libs
-
-      - name: Copy files via SCP
-        uses: appleboy/scp-action@master
+      - name: Copy files and execute commands via SSH
+        uses: appleboy/ssh-action@master
+        env:
+          JAR_FILE: plantour.jar
+          APP_DIR: /opt/plantour
+          SERVICE_FILE: /etc/systemd/system/plantour.service
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: "./build/libs/*.jar"
-          target: "/home/${{ secrets.EC2_USER }}"
-          strip_components: 2
+          envs: JAR_FILE,APP_DIR,SERVICE_FILE
+          script: |
+            # 애플리케이션 디렉토리 생성 (없는 경우에만)
+            sudo mkdir -p $APP_DIR
+            sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} $APP_DIR
 
-      - name: Execute remote SSH commands
+            # JAR 파일 복사 및 권한 설정
+            scp ${{ github.workspace }}/build/libs/*.jar ${{ secrets.EC2_USER }}@localhost:$APP_DIR/$JAR_FILE
+            sudo chown root:root $APP_DIR/$JAR_FILE
+            sudo chmod 644 $APP_DIR/$JAR_FILE
+
+            # 서비스 파일이 없는 경우에만 생성
+            if [ ! -f "$SERVICE_FILE" ]; then
+              sudo tee $SERVICE_FILE > /dev/null << EOT
+            [Unit]
+            Description=Plantour Spring Boot Application
+            After=network.target
+
+            [Service]
+            User=${{ secrets.EC2_USER }}
+            ExecStart=/usr/bin/java -jar $APP_DIR/$JAR_FILE
+            SuccessExitStatus=143
+            Environment="RDS_HOSTNAME=${{ secrets.RDS_HOSTNAME }}"
+            Environment="RDS_PORT=${{ secrets.RDS_PORT }}"
+            Environment="RDS_DB_NAME=${{ secrets.RDS_DB_NAME }}"
+            Environment="RDS_USERNAME=${{ secrets.RDS_USERNAME }}"
+            Environment="RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}"
+            Environment="SECRET_KEY=${{ secrets.SECRET_KEY }}"
+            Environment="GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}"
+            Environment="GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            Environment="GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}"
+            Environment="BASE_URL=${{ secrets.BASE_URL }}"
+            Environment="CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}"
+
+            [Install]
+            WantedBy=multi-user.target
+            EOT
+              sudo systemctl daemon-reload
+            fi
+
+            # 서비스 재시작 및 상태 확인
+            sudo systemctl restart plantour
+            sudo systemctl status plantour
+
+      - name: Check deployment
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -48,18 +88,4 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            export RDS_HOSTNAME="${{ secrets.RDS_HOSTNAME }}"
-            export RDS_PORT="${{ secrets.RDS_PORT }}"
-            export RDS_DB_NAME="${{ secrets.RDS_DB_NAME }}"
-            export RDS_USERNAME="${{ secrets.RDS_USERNAME }}"
-            export RDS_PASSWORD="${{ secrets.RDS_PASSWORD }}"
-            export SECRET_KEY="${{ secrets.SECRET_KEY }}"
-            export GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}"
-            export GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}"
-            export GOOGLE_REDIRECT_URI="${{ secrets.GOOGLE_REDIRECT_URI }}"
-            export BASE_URL="${{ secrets.BASE_URL }}"
-            export CORS_ALLOWED_ORIGINS="${{ secrets.CORS_ALLOWED_ORIGINS }}"
-            sudo systemctl stop plantour || true
-            sudo mv /home/${{ secrets.EC2_USER }}/*.jar /opt/plantour/plantour.jar
-            sudo systemctl start plantour
-            sudo systemctl status plantour
+            sudo systemctl is-active --quiet plantour && echo "Plantour is running" || echo "Plantour is not running"
