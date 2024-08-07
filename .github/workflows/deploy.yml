@@ -70,7 +70,7 @@ jobs:
 
             [Service]
             User=${{ secrets.EC2_USER }}
-            ExecStart=/usr/bin/java -jar /opt/plantour/$JAR_FILE
+            ExecStart=/usr/bin/java -Dserver.port=8443 -Djavax.net.ssl.keyStore=/opt/plantour/keystore.p12 -Djavax.net.ssl.keyStorePassword=${KEY_STORE_PASSWORD} -jar /opt/plantour/PLANTOUR-0.0.1-SNAPSHOT.jar
             WorkingDirectory=/opt/plantour
             SuccessExitStatus=143
             Environment="RDS_HOSTNAME=${RDS_HOSTNAME}"
