@@ -38,15 +38,22 @@ public class    AuthController {
         }
 
         try {
-            String accessToken = oAuth2Service.getAccessToken(code);
-            logger.info("Obtained access token from Google");
-            UserEntity user = oAuth2Service.getUserInfo(accessToken);
-            logger.info("Retrieved user info: {}", user);
-            String jwt = tokenProvider.createAccessToken(user.getId());
-            String refreshToken = tokenProvider.createRefreshToken(user.getId());
-            return ResponseEntity.ok(new AuthResponse(jwt, refreshToken));
+            return processGoogleAuthentication(code);
         } catch (Exception e) {
             logger.error("인증 처리 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("인증 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
+
+    }
+
+    @GetMapping("/google/callback")
+    public ResponseEntity<?> handleGoogleCallback(@RequestParam String code) {
+        logger.info("Received Google callback with code: {}", code);
+        try {
+            return processGoogleAuthentication(code);
+        } catch (Exception e) {
+            logger.error("Google callback 처리 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("인증 처리 중 오류가 발생했습니다: " + e.getMessage());
         }
@@ -80,6 +87,16 @@ public class    AuthController {
         boolean isValid = tokenProvider.validateToken(token);
         logger.info("Token is valid: {}", isValid);
         return ResponseEntity.ok(Map.of("valid", isValid));
+    }
+
+    private ResponseEntity<?> processGoogleAuthentication(String code) throws Exception {
+        String accessToken = oAuth2Service.getAccessToken(code);
+        logger.info("Obtained access token from Google");
+        UserEntity user = oAuth2Service.getUserInfo(accessToken);
+        logger.info("Retrieved user info: {}", user);
+        String jwt = tokenProvider.createAccessToken(user.getId());
+        String refreshToken = tokenProvider.createRefreshToken(user.getId());
+        return ResponseEntity.ok(new AuthResponse(jwt, refreshToken));
     }
 
 
