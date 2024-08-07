@@ -6,7 +6,7 @@ spring:
     port: 8443
     ssl:
       enabled: true
-      key-store: file:/opt/plantour/keystore.p12
+      key-store: classpath:keystore.p12
       key-store-password: ${KEY_STORE_PASSWORD}
       key-store-type: PKCS12
       enabled-protocols: TLSv1.2,TLSv1.3
@@ -55,10 +55,8 @@ spring:
 
   management:
     endpoint:
-      shutdown: enabled=true
+      shutdown:
+        enabled: true
       web:
-        exposure: include=shutdown
-
-
-
-
+        exposure:
+          include: shutdown
