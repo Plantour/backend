@@ -51,13 +51,12 @@ jobs:
           GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
           BASE_URL: ${{ secrets.BASE_URL }}
           CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
-          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          envs: JAR_FILE,RDS_HOSTNAME,RDS_PORT,RDS_DB_NAME,RDS_USERNAME,RDS_PASSWORD,SECRET_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_REDIRECT_URI,BASE_URL,CORS_ALLOWED_ORIGINS,KEY_STORE_PASSWORD
+          envs: JAR_FILE,RDS_HOSTNAME,RDS_PORT,RDS_DB_NAME,RDS_USERNAME,RDS_PASSWORD,SECRET_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_REDIRECT_URI,BASE_URL,CORS_ALLOWED_ORIGINS
           script: |
             # 파일 권한 및 소유자 설정
             sudo chown ${{ secrets.EC2_USER }}:${{ secrets.EC2_USER }} /opt/plantour/$JAR_FILE
@@ -71,7 +70,7 @@ jobs:
 
             [Service]
             User=${{ secrets.EC2_USER }}
-            ExecStart=/usr/bin/java -Dserver.port=8443 -Djavax.net.ssl.keyStore=/opt/plantour/keystore.p12 -Djavax.net.ssl.keyStorePassword=${KEY_STORE_PASSWORD} -jar /opt/plantour/PLANTOUR-0.0.1-SNAPSHOT.jar
+            ExecStart=/usr/bin/java -Dserver.port=8443 -jar /opt/plantour/PLANTOUR-0.0.1-SNAPSHOT.jar
             WorkingDirectory=/opt/plantour
             SuccessExitStatus=143
             Environment="RDS_HOSTNAME=${RDS_HOSTNAME}"
@@ -85,7 +84,7 @@ jobs:
             Environment="GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}"
             Environment="BASE_URL=${BASE_URL}"
             Environment="CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}"
-            Environment="KEY_STORE_PASSWORD=${KEY_STORE_PASSWORD}"
+            Environment="KEY_STORE_PASSWORD=3337"
 
             [Install]
             WantedBy=multi-user.target
