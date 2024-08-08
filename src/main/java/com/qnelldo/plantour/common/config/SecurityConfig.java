@@ -105,20 +105,19 @@ public class SecurityConfig {
                 .clientName("Google")
                 .build();
     }
-    @Value("${spring.web.cors.allowed-origins}")
-    private String allowedOriginString;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        String[] allowedOrigins = allowedOriginString.split(",");
-        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins));
-
+        configuration.addAllowedOrigin("https://plantour.site");
+        configuration.addAllowedOrigin("https://plantour-eta.vercel.app");
         configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L); // 1시간 동안 preflight 결과를 캐시
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
