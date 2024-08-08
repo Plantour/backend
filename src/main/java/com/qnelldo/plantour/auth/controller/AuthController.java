@@ -51,7 +51,9 @@ public class    AuthController {
     public ResponseEntity<?> handleGoogleCallback(@RequestParam String code) {
         logger.info("Received Google callback with code: {}", code);
         try {
-            return processGoogleAuthentication(code);
+            ResponseEntity<?> response = processGoogleAuthentication(code);
+            logger.info("Processed Google authentication, response: {}", response);
+            return response;
         } catch (Exception e) {
             logger.error("Google callback 처리 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
