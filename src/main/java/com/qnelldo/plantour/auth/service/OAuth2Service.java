@@ -4,6 +4,8 @@ import com.qnelldo.plantour.auth.dto.GoogleUserInfo;
 import com.qnelldo.plantour.auth.dto.TokenResponse;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -18,6 +20,7 @@ public class OAuth2Service {
 
     private RestTemplate restTemplate;
     private UserService userService;
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2Service.class); // logger
 
     @Autowired
     public OAuth2Service(UserService userService) {
@@ -44,14 +47,21 @@ public class OAuth2Service {
         params.add("redirect_uri", "https://plantour.site/api/auth/google/callback");
         params.add("code", code);
 
+        logger.info("Sending request to Google with params: {}", params);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(url, request, TokenResponse.class);
-
-        return response.getBody().getAccess_token();
+        try {
+            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(url, request, TokenResponse.class);
+            logger.info("Received response from Google: {}", response);
+            return response.getBody().getAccess_token();
+        } catch (Exception e) {
+            logger.error("Error while getting access token from Google", e);
+            throw e;
+        }
     }
 
     public UserEntity getUserInfo(String accessToken) {
