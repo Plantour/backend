@@ -47,20 +47,6 @@ public class    AuthController {
 
     }
 
-    @GetMapping("/google/callback")
-    public ResponseEntity<?> handleGoogleCallback(@RequestParam String code) {
-        logger.info("Received Google callback with code: {}", code);
-        try {
-            ResponseEntity<?> response = processGoogleAuthentication(code);
-            logger.info("Processed Google authentication, response: {}", response);
-            return response;
-        } catch (Exception e) {
-            logger.error("Google callback 처리 중 오류 발생", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("인증 처리 중 오류가 발생했습니다: " + e.getMessage());
-        }
-    }
-
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest) {
         String requestRefreshToken = refreshTokenRequest.getRefreshToken();
