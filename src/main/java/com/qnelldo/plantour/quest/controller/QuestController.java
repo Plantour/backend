@@ -23,7 +23,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/quests")
 @Tag(name = "퀘스트 컨트롤러", description = "퀘스트 관리 및 완료 처리")
-@CrossOrigin(origins = "${spring.web.cors.allowed-origins}", maxAge = 3600)
 public class QuestController {
     private static final Logger logger = LoggerFactory.getLogger(QuestController.class);
 
