@@ -35,8 +35,6 @@ public class OAuth2Service {
     @Value("${GOOGLE_CLIENT_SECRET}")
     private String clientSecret;
 
-    @Value("${GOOGLE_REDIRECT_URI}")
-    private String redirectUri;
 
     public String getAccessToken(String code) {
         String url = "https://oauth2.googleapis.com/token";
@@ -45,7 +43,7 @@ public class OAuth2Service {
         params.add("grant_type", "authorization_code");
         params.add("client_id", clientId);
         params.add("client_secret", clientSecret);
-        params.add("redirect_uri", redirectUri);
+        params.add("redirect_uri", "https://plantour.site/api/auth/google/callback");
         params.add("code", code);
 
         logger.info("Sending request to Google with params: {}", params);
