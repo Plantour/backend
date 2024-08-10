@@ -35,4 +35,12 @@ public class UserController {
         logger.info("Fetching user with id: {}", id);
         return ResponseEntity.ok(userService.getUserById(id));
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("/{userId}/nickname")
+    public ResponseEntity<UserEntity> updateNickname(@PathVariable Long userId, @RequestParam String newNickname) {
+        logger.info("Updating nickname for user: {} to {}", userId, newNickname);
+        UserEntity updatedUser = userService.updateUserNickname(userId, newNickname);
+        return ResponseEntity.ok(updatedUser);
+    }
 }

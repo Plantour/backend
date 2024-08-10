@@ -98,6 +98,16 @@ public class JwtTokenProvider {
         }
     }
 
+    // Authorization 헤더에서 Bearer 토큰 추출 및 사용자 ID 반환
+    public Long extractUserIdFromAuthorizationHeader(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            String token = authorizationHeader.substring(7);
+            return getUserIdFromToken(token);
+        } else {
+            throw new IllegalArgumentException("유효하지 않은 Authorization 헤더 형식입니다.");
+        }
+    }
+
     public RefreshToken verifyExpiration(RefreshToken token) {
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
