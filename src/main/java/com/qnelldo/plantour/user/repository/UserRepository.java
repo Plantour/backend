@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     String findLanguageCodeByEmail(String email);
     Optional<UserEntity> findByProviderId(String providerId);
+
+    boolean existsByNickname(String nickname);
 }

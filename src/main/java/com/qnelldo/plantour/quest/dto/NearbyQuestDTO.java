@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class NearbyQuestDTO {
-
     private Long id;
     private String content;
     private Double latitude;
@@ -19,6 +18,7 @@ public class NearbyQuestDTO {
     // 사용자 정보
     private Long userId;
     private String userName;
+    private String userNickname; // 닉네임 추가
 
     // 식물 정보
     private Long plantId;

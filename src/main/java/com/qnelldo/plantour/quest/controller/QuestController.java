@@ -3,6 +3,7 @@ package com.qnelldo.plantour.quest.controller;
 import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.quest.dto.NearbyQuestDTO;
+import com.qnelldo.plantour.quest.dto.QuestCompletionDTO;
 import com.qnelldo.plantour.quest.dto.QuestCompletionResponse;
 import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
 import com.qnelldo.plantour.quest.service.QuestCompletionService;
@@ -55,11 +56,11 @@ public class QuestController {
 
     @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<byte[]> getQuestImage(@PathVariable Long id) {
-        QuestCompletionEntity questCompletion = questCompletionService.getQuestCompletionById(id);
-        if (questCompletion != null && questCompletion.getImageData() != null) {
+        byte[] imageData = questCompletionService.getQuestImageData(id);
+        if (imageData != null) {
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_JPEG)
-                    .body(questCompletion.getImageData());
+                    .body(imageData);
         } else {
             return ResponseEntity.notFound().build();
         }
@@ -105,7 +106,7 @@ public class QuestController {
             logger.info("완료된 퀘스트 퍼즐 요청 - userId: {}, questId: {}, puzzleNumber: {}, plantId: {}, textData: {}, latitude: {}, longitude: {}, imageDataSize: {}",
                     userId, questId, puzzleNumber, plantId, textData, markerLatitude, markerLongitude, imageData.length);
 
-            QuestCompletionEntity result = questCompletionService.completeQuestPuzzle(
+            QuestCompletionDTO result = questCompletionService.completeQuestPuzzle(
                     userId,
                     questId,
                     Integer.parseInt(puzzleNumber),

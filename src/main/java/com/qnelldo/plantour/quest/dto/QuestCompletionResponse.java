@@ -7,11 +7,11 @@ import java.util.Map;
 
 @Data
 public class QuestCompletionResponse {
-    private Map<String, Object> quest;
+    private QuestDTO quest;
     private Map<String, Object> plantData;
-    private List<Map<String, Object>> completedQuests;
+    private List<QuestCompletionDTO> completedQuests;
 
-    public QuestCompletionResponse(Map<String, Object> quest, Map<String, Object> plantData, List<Map<String, Object>> completedQuests) {
+    public QuestCompletionResponse(QuestDTO quest, Map<String, Object> plantData, List<QuestCompletionDTO> completedQuests) {
         this.quest = quest;
         this.plantData = plantData;
         this.completedQuests = completedQuests;

@@ -72,6 +72,7 @@ public class PlantNoteService {
                         baseUrl + "/api/plant-notes/image/" + note.getId(),
                         note.getUser().getId(),
                         note.getUser().getName(),
+                        note.getUser().getNickname(), // 닉네임 추가
                         note.getPlantInfoType().name(),  // Enum을 문자열로 변환
                         note.getPlantInfoType() == PlantInfoType.SELECTED ? note.getSelectedPlantId() : null,
                         note.getPlantInfoType() == PlantInfoType.CUSTOM ? note.getCustomPlantInfo() : null
@@ -81,6 +82,7 @@ public class PlantNoteService {
         logger.info("Found {} nearby plant notes", noteDTOs.size());
         return Map.of("nearbyPlantNotes", noteDTOs);
     }
+
 
     @Transactional
     public PlantNoteEntity updatePlantInfo(Long noteId, PlantInfoType newType, Long selectedPlantId, String customInfo) {
