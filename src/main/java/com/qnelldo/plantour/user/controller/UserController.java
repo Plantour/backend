@@ -1,5 +1,6 @@
 package com.qnelldo.plantour.user.controller;
 
+import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
@@ -15,13 +16,13 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
         this.userService = userService;
     }
 
-    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{userId}/language")
     public ResponseEntity<UserEntity> updateUserLanguage(@PathVariable Long userId, @RequestParam String languageCode) {
         logger.info("Updating language for user: {} to {}", userId, languageCode);
@@ -30,15 +31,9 @@ public class UserController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/{id}")
-    public ResponseEntity<UserEntity> getUser(@PathVariable Long id) {
-        logger.info("Fetching user with id: {}", id);
-        return ResponseEntity.ok(userService.getUserById(id));
-    }
-
-    @PreAuthorize("isAuthenticated()")
     @PutMapping("/{userId}/nickname")
-    public ResponseEntity<UserEntity> updateNickname(@PathVariable Long userId, @RequestParam String newNickname) {
+    public ResponseEntity<UserEntity> updateNickname(@RequestHeader String authorization, @RequestParam String newNickname) {
+        Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(authorization);
         logger.info("Updating nickname for user: {} to {}", userId, newNickname);
         UserEntity updatedUser = userService.updateUserNickname(userId, newNickname);
         return ResponseEntity.ok(updatedUser);

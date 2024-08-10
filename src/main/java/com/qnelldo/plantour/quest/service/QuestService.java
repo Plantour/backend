@@ -10,12 +10,14 @@ import com.qnelldo.plantour.quest.entity.QuestEntity;
 import com.qnelldo.plantour.quest.entity.QuestPlantEntity;
 import com.qnelldo.plantour.quest.repository.QuestCompletionRepository;
 import com.qnelldo.plantour.quest.repository.QuestRepository;
+import com.qnelldo.plantour.user.service.NicknameService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,13 +31,16 @@ public class QuestService {
     private final QuestCompletionRepository questCompletionRepository;
     private final QuestCompletionService questCompletionService;
     private final LanguageContext languageContext;
+    private final NicknameService nicknameService;
 
-    public QuestService(QuestRepository questRepository, QuestCompletionService questCompletionService, QuestCompletionRepository questCompletionRepository, LanguageContext languageContext) {
+    public QuestService(NicknameService nicknameService, QuestRepository questRepository, QuestCompletionService questCompletionService, QuestCompletionRepository questCompletionRepository, LanguageContext languageContext) {
         this.questCompletionRepository = questCompletionRepository;
         this.questCompletionService = questCompletionService;
         this.questRepository = questRepository;
         this.languageContext = languageContext;
+        this.nicknameService = nicknameService;
     }
+
     private static final Logger logger = LoggerFactory.getLogger(QuestService.class);
 
     @Value("${spring.app.base-url}")
@@ -121,25 +126,42 @@ public class QuestService {
         List<QuestCompletionEntity> nearbyQuests =
                 questCompletionRepository.findNearbyQuests(latitude, longitude, radiusKm);
 
-        String languageCode = languageContext.getCurrentLanguage();
-
         List<NearbyQuestDTO> questDTOs = nearbyQuests.stream()
-                .map(quest -> new NearbyQuestDTO(
-                        quest.getId(),
-                        quest.getContent(),
-                        quest.getLatitude(),
-                        quest.getLongitude(),
-                        quest.getCompletedAt(),
-                        baseUrl + "/api/quests/image/" + quest.getId(),
-                        quest.getUser().getId(),
-                        quest.getUser().getName(),
-                        quest.getPlant().getId(),
-                        // 다국어 지원을 위한 코드
-                        quest.getPlant().getName().getOrDefault(languageCode, quest.getPlant().getName().get("ENG")),
-                        quest.getUser().getNickname() // 닉네임은 단일 값으로 처리
-                ))
+                .map(quest -> {
+                    // 중간 변수 사용
+                    Long questId = quest.getId();
+                    String content = quest.getContent();
+                    Double questLatitude = quest.getLatitude();
+                    Double questLongitude = quest.getLongitude();
+                    LocalDateTime completedAt = quest.getCompletedAt();
+                    String imageUrl = baseUrl + "/api/quests/image/" + questId;
+                    Long userId = quest.getUser().getId();
+                    String userName = quest.getUser().getName();
+
+                    // 닉네임 관련 중간 변수
+                    String localizedNickname = nicknameService.getLocalizedNickname(quest.getUser().getId());
+
+                    // 식물 정보 추가
+                    Long plantId = quest.getPlant().getId();
+                    String plantName = quest.getPlant().getName().get(languageContext.getCurrentLanguage());
+
+                    return new NearbyQuestDTO(
+                            questId,
+                            content,
+                            questLatitude,
+                            questLongitude,
+                            completedAt,
+                            imageUrl,
+                            userId,
+                            userName,
+                            plantId,
+                            plantName,
+                            localizedNickname
+                    );
+                })
                 .collect(Collectors.toList());
 
         return Collections.singletonMap("nearbyQuests", questDTOs);
     }
+
 }

@@ -9,6 +9,7 @@ public class UserDTO {
     private String email;
     private String name;
     private String profilePicture;
-    private Map<String, String> nickname;  // 다국어 지원을 위해 Map으로 변경
+    private String nickname;
+    private boolean isCustomNickname;
     private String languageCode;
 }
