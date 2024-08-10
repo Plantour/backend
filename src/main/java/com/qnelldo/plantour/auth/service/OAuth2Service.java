@@ -3,6 +3,7 @@ package com.qnelldo.plantour.auth.service;
 import com.qnelldo.plantour.auth.dto.GoogleUserInfo;
 import com.qnelldo.plantour.auth.dto.TokenResponse;
 import com.qnelldo.plantour.user.entity.UserEntity;
+import com.qnelldo.plantour.user.service.NicknameService;
 import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +21,12 @@ public class OAuth2Service {
 
     private RestTemplate restTemplate;
     private UserService userService;
-    private NicknameService nicknameService;
     private static final Logger logger = LoggerFactory.getLogger(OAuth2Service.class);
 
     @Autowired
-    public OAuth2Service(UserService userService, NicknameService nicknameService) {
+    public OAuth2Service(UserService userService) {
         this.restTemplate = new RestTemplate();
         this.userService = userService;
-        this.nicknameService = nicknameService;
     }
 
 

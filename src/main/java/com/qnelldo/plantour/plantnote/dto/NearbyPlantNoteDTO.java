@@ -23,6 +23,6 @@ public class NearbyPlantNoteDTO {
 
     // 식물 정보
     private String infoType;  // plantInfoType 대신
-    private Long plantId;     // selectedPlantId 대신
+    private String plantName;     // selectedPlantId 대신 추출함
     private String plantInfo; // customPlantInfo 대신
 }

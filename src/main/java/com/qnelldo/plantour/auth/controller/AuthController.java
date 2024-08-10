@@ -6,6 +6,7 @@ import com.qnelldo.plantour.auth.entity.RefreshToken;
 import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.auth.service.OAuth2Service;
 import com.qnelldo.plantour.user.entity.UserEntity;
+import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -20,11 +21,13 @@ public class    AuthController {
 
     private final OAuth2Service oAuth2Service;
     private final JwtTokenProvider tokenProvider;
+    private final UserService userService;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-    public AuthController(OAuth2Service oAuth2Service, JwtTokenProvider tokenProvider) {
+    public AuthController(OAuth2Service oAuth2Service, JwtTokenProvider tokenProvider, UserService userService) {
         this.oAuth2Service = oAuth2Service;
         this.tokenProvider = tokenProvider;
+        this.userService = userService;
     }
 
     @PostMapping("/google")
@@ -79,19 +82,23 @@ public class    AuthController {
 
     private ResponseEntity<?> processGoogleAuthentication(String code) throws Exception {
         try {
-        String accessToken = oAuth2Service.getAccessToken(code);
-        logger.info("Obtained access token from Google");
-        UserEntity user = oAuth2Service.getUserInfo(accessToken);
-        logger.info("Retrieved user info: {}", user);
-        String jwt = tokenProvider.createAccessToken(user.getId());
-        String refreshToken = tokenProvider.createRefreshToken(user.getId());
-        return ResponseEntity.ok(new AuthResponse(jwt, refreshToken));
+            String accessToken = oAuth2Service.getAccessToken(code);
+            logger.info("Obtained access token from Google");
+            UserEntity user = oAuth2Service.getUserInfo(accessToken);
+            logger.info("Retrieved user info: {}", user);
+
+            // 사용자 언어 설정을 가져와서 설정
+            userService.setLanguageFromUser(user.getId());
+
+            String jwt = tokenProvider.createAccessToken(user.getId());
+            String refreshToken = tokenProvider.createRefreshToken(user.getId());
+
+            return ResponseEntity.ok(new AuthResponse(jwt, refreshToken));
         } catch (Exception e) {
             logger.error("인증 처리 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("인증 처리 중 오류가 발생했습니다: " + e.getMessage());
         }
     }
-
 
 }
