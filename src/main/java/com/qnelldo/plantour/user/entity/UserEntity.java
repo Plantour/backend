@@ -39,6 +39,9 @@ public class UserEntity {
     @Column(name = "language_code", nullable = false)
     private String languageCode = "KOR";
 
+    @Column(name = "nickname", nullable = false, unique = true)
+    private String nickname;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

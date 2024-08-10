@@ -20,12 +20,14 @@ public class OAuth2Service {
 
     private RestTemplate restTemplate;
     private UserService userService;
-    private static final Logger logger = LoggerFactory.getLogger(OAuth2Service.class); // logger
+    private NicknameService nicknameService;
+    private static final Logger logger = LoggerFactory.getLogger(OAuth2Service.class);
 
     @Autowired
-    public OAuth2Service(UserService userService) {
+    public OAuth2Service(UserService userService, NicknameService nicknameService) {
         this.restTemplate = new RestTemplate();
         this.userService = userService;
+        this.nicknameService = nicknameService;
     }
 
 
@@ -82,6 +84,7 @@ public class OAuth2Service {
         );
 
         GoogleUserInfo userInfo = response.getBody();
+        String nickname = nicknameService.generateUniqueNickname("KOR"); // 기본값으로 한국어 사용
         return userService.processOAuthUser(userInfo.getEmail(), userInfo.getName(), userInfo.getPicture(), userInfo.getId());
     }
 }

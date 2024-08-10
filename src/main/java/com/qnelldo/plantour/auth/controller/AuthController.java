@@ -78,6 +78,7 @@ public class    AuthController {
     }
 
     private ResponseEntity<?> processGoogleAuthentication(String code) throws Exception {
+        try {
         String accessToken = oAuth2Service.getAccessToken(code);
         logger.info("Obtained access token from Google");
         UserEntity user = oAuth2Service.getUserInfo(accessToken);
@@ -85,6 +86,11 @@ public class    AuthController {
         String jwt = tokenProvider.createAccessToken(user.getId());
         String refreshToken = tokenProvider.createRefreshToken(user.getId());
         return ResponseEntity.ok(new AuthResponse(jwt, refreshToken));
+        } catch (Exception e) {
+            logger.error("인증 처리 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("인증 처리 중 오류가 발생했습니다: " + e.getMessage());
+        }
     }
 
 
