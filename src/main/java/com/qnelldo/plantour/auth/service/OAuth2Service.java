@@ -84,7 +84,6 @@ public class OAuth2Service {
         );
 
         GoogleUserInfo userInfo = response.getBody();
-        String nickname = nicknameService.generateUniqueNickname("KOR"); // 기본값으로 한국어 사용
         return userService.processOAuthUser(userInfo.getEmail(), userInfo.getName(), userInfo.getPicture(), userInfo.getId());
     }
 }

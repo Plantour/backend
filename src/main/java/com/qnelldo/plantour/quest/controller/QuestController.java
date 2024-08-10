@@ -46,7 +46,7 @@ public class QuestController {
         if (season == null) {
             season = questService.getCurrentSeason();
         }
-        Long userId = jwtTokenProvider.getUserIdFromToken(token.substring(7));
+        Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
         QuestCompletionResponse response = questService.getQuestDataBySeason(season, userId);
 
         logger.info("퀘스트 데이터 조회 결과: {}", response);
@@ -91,18 +91,13 @@ public class QuestController {
             @RequestPart("imageData") MultipartFile image
     ) {
         try {
-            if (!token.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰 형식입니다.");
-            }
-            String jwtToken = token.substring(7);
-            Long userId = jwtTokenProvider.getUserIdFromToken(jwtToken);
+            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
 
             Season season = convertStringToSeason(selectedSeason);
             Long questId = convertSeasonToQuestId(season);
 
             byte[] imageData = image.getBytes();
 
-            // 로깅 추가
             logger.info("완료된 퀘스트 퍼즐 요청 - userId: {}, questId: {}, puzzleNumber: {}, plantId: {}, textData: {}, latitude: {}, longitude: {}, imageDataSize: {}",
                     userId, questId, puzzleNumber, plantId, textData, markerLatitude, markerLongitude, imageData.length);
 

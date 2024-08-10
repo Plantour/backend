@@ -1,6 +1,8 @@
 package com.qnelldo.plantour.quest.service;
 
+import com.qnelldo.plantour.common.context.LanguageContext;
 import com.qnelldo.plantour.common.enums.Season;
+import com.qnelldo.plantour.plant.dto.PlantDTO;
 import com.qnelldo.plantour.plant.entity.PlantEntity;
 import com.qnelldo.plantour.quest.dto.*;
 import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
@@ -26,11 +28,13 @@ public class QuestService {
     private final QuestRepository questRepository;
     private final QuestCompletionRepository questCompletionRepository;
     private final QuestCompletionService questCompletionService;
+    private final LanguageContext languageContext;
 
-    public QuestService(QuestRepository questRepository, QuestCompletionService questCompletionService, QuestCompletionRepository questCompletionRepository) {
+    public QuestService(QuestRepository questRepository, QuestCompletionService questCompletionService, QuestCompletionRepository questCompletionRepository, LanguageContext languageContext) {
         this.questCompletionRepository = questCompletionRepository;
         this.questCompletionService = questCompletionService;
         this.questRepository = questRepository;
+        this.languageContext = languageContext;
     }
     private static final Logger logger = LoggerFactory.getLogger(QuestService.class);
 
@@ -53,7 +57,8 @@ public class QuestService {
                 .orElseThrow(() -> new RuntimeException("해당 시즌의 퀘스트를 찾을 수 없습니다."));
 
         QuestDTO questDto = convertToQuestDTO(quest);
-        Map<String, Object> plantData = getQuestPlantsBySeason(season, "KOR");
+        String languageCode = languageContext.getCurrentLanguage();
+        Map<String, Object> plantData = getQuestPlantsBySeason(season, languageCode);
         List<QuestCompletionDTO> completedQuests = questCompletionService.getCompletedQuestsBySeason(userId, season);
 
         return new QuestCompletionResponse(questDto, plantData, completedQuests);
@@ -73,7 +78,7 @@ public class QuestService {
     private QuestPlantDTO convertToQuestPlantDTO(QuestPlantEntity questPlant) {
         QuestPlantDTO dto = new QuestPlantDTO();
         dto.setId(questPlant.getId());
-        dto.setPlant(convertToPlantDTO(questPlant.getPlant()));
+        dto.setPlant(convertToPlantDTO(questPlant.getPlant())); // 이 줄에서 에러 발생
         return dto;
     }
 
@@ -89,33 +94,18 @@ public class QuestService {
         return dto;
     }
 
-    private QuestCompletionDTO convertToQuestCompletionDTO(QuestCompletionEntity entity) {
-        QuestCompletionDTO dto = new QuestCompletionDTO();
-        dto.setId(entity.getId());
-        dto.setUserId(entity.getUser().getId());
-        dto.setQuestId(entity.getQuest().getId());
-        dto.setPuzzleNumber(entity.getPuzzleNumber());
-        dto.setPlantId(entity.getPlant().getId());
-        dto.setContent(entity.getContent());
-        dto.setLatitude(entity.getLatitude());
-        dto.setLongitude(entity.getLongitude());
-        dto.setCompletedAt(entity.getCompletedAt());
-        dto.setImageUrl(baseUrl + "/api/quests/image/" + entity.getId());
-        return dto;
-    }
-
     public Map<String, Object> getQuestPlantsBySeason(Season season, String languageCode) {
         QuestEntity mission = getQuestBySeason(season);
         List<Map<String, Object>> plants = mission.getQuestPlants().stream()
                 .map(missionPlant -> {
                     Map<String, Object> plantMap = new HashMap<>();
                     plantMap.put("plantId", missionPlant.getPlant().getId());
-                    plantMap.put("plantName", missionPlant.getPlant().getName().get(languageCode));
+                    plantMap.put("plantName", missionPlant.getPlant().getName().getOrDefault(languageCode, missionPlant.getPlant().getName().get("ENG")));
                     plantMap.put("imgUrl", missionPlant.getPlant().getImageUrl());
                     plantMap.put("characteristics", List.of(
-                            missionPlant.getPlant().getCharacteristics1().get(languageCode),
-                            missionPlant.getPlant().getCharacteristics2().get(languageCode),
-                            missionPlant.getPlant().getCharacteristics3().get(languageCode)
+                            missionPlant.getPlant().getCharacteristics1().getOrDefault(languageCode, missionPlant.getPlant().getCharacteristics1().get("ENG")),
+                            missionPlant.getPlant().getCharacteristics2().getOrDefault(languageCode, missionPlant.getPlant().getCharacteristics2().get("ENG")),
+                            missionPlant.getPlant().getCharacteristics3().getOrDefault(languageCode, missionPlant.getPlant().getCharacteristics3().get("ENG"))
                     ));
                     return plantMap;
                 })
@@ -131,6 +121,8 @@ public class QuestService {
         List<QuestCompletionEntity> nearbyQuests =
                 questCompletionRepository.findNearbyQuests(latitude, longitude, radiusKm);
 
+        String languageCode = languageContext.getCurrentLanguage();
+
         List<NearbyQuestDTO> questDTOs = nearbyQuests.stream()
                 .map(quest -> new NearbyQuestDTO(
                         quest.getId(),
@@ -142,12 +134,12 @@ public class QuestService {
                         quest.getUser().getId(),
                         quest.getUser().getName(),
                         quest.getPlant().getId(),
-                        quest.getPlant().getName().get("ENG"),
-                        quest.getUser().getNickname().get("ENG")
+                        // 다국어 지원을 위한 코드
+                        quest.getPlant().getName().getOrDefault(languageCode, quest.getPlant().getName().get("ENG")),
+                        quest.getUser().getNickname() // 닉네임은 단일 값으로 처리
                 ))
                 .collect(Collectors.toList());
 
         return Collections.singletonMap("nearbyQuests", questDTOs);
     }
 }
-
