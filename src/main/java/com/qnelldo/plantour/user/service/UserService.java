@@ -29,7 +29,6 @@ public class UserService {
 
         UserEntity user = getUserEntityById(userId);
         user.setLanguageCode(languageCode.toUpperCase());
-        languageContext.setCurrentLanguage(languageCode.toUpperCase());
         return convertToDTO(userRepository.save(user));
     }
 
@@ -80,8 +79,14 @@ public class UserService {
 
     @Transactional
     public UserDTO updateUserNickname(Long userId, String newNickname) {
+        // 중복 닉네임 확인을 먼저 수행
+        if (userRepository.existsByCustomNickname(newNickname)) {
+            throw new IllegalArgumentException("Nickname already exists: " + newNickname);
+        }
+
         UserEntity user = getUserEntityById(userId);
         nicknameService.updateUserNickname(userId, newNickname);
+
         return convertToDTO(user);
     }
 

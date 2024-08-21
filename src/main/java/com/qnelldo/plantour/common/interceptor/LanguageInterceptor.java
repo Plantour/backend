@@ -24,15 +24,27 @@ public class LanguageInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String acceptLanguage = request.getHeader("X-User-Language");
+        String languageHeader = request.getHeader("X-User-Language");
         String token = request.getHeader("Authorization");
 
-        // Default language
+        // 유효한 언어 코드 검증 (KOR 또는 ENG만 허용)
+        if (languageHeader != null && (languageHeader.equalsIgnoreCase("KOR") || languageHeader.equalsIgnoreCase("ENG"))) {
+            languageContext.setCurrentLanguage(languageHeader.toUpperCase());
+        } else {
+            languageContext.setCurrentLanguage("ENG");  // 기본값 설정
+        }
+
+        // 로그인된 사용자의 경우 언어 설정을 DB에 저장
         if (token != null && token.startsWith("Bearer ")) {
             Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
             String userLanguage = userService.getUserLanguage(userId);
-            languageContext.setCurrentLanguage(userLanguage);
-        } else languageContext.setCurrentLanguage(Objects.requireNonNullElse(acceptLanguage, "ENG"));
+
+            if (!userLanguage.equalsIgnoreCase(languageContext.getCurrentLanguage())) {
+                userService.updateUserLanguage(userId, languageContext.getCurrentLanguage());
+            } else {
+                languageContext.setCurrentLanguage(userLanguage);
+            }
+        }
 
         return true;
     }
