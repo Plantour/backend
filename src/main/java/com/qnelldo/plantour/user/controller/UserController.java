@@ -31,6 +31,7 @@ public class UserController {
         UserDTO user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
+    //왜 안하는데!
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/nickname")
