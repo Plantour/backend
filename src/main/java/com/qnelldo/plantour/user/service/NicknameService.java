@@ -56,17 +56,4 @@ public class NicknameService {
         userRepository.save(user);
     }
 
-    @Transactional
-    public void removeCustomNickname(Long userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setCustomNickname(null);
-        userRepository.save(user);
-    }
-
-    public boolean hasCustomNickname(Long userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return user.getCustomNickname() != null;
-    }
 }

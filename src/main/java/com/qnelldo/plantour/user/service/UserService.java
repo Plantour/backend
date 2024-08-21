@@ -92,7 +92,7 @@ public class UserService {
         dto.setName(user.getName());
         dto.setProfilePicture(user.getProfilePicture());
         dto.setNickname(nicknameService.getLocalizedNickname(user.getId()));
-        dto.setCustomNickname(user.getCustomNickname() != null);
+        dto.setCustomNickname(user.getCustomNickname());
         dto.setLanguageCode(user.getLanguageCode());
         return dto;
     }

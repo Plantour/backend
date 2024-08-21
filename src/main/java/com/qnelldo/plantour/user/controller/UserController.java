@@ -1,7 +1,6 @@
 package com.qnelldo.plantour.user.controller;
 
 import com.qnelldo.plantour.auth.service.JwtTokenProvider;
-import com.qnelldo.plantour.common.context.LanguageContext;
 import com.qnelldo.plantour.user.dto.UserDTO;
 import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
