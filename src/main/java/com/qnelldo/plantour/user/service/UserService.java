@@ -1,7 +1,7 @@
 package com.qnelldo.plantour.user.service;
 
 import com.qnelldo.plantour.common.context.LanguageContext;
-import com.qnelldo.plantour.user.entity.Nickname;
+import com.qnelldo.plantour.user.dto.UserDTO;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,43 +21,48 @@ public class UserService {
         this.languageContext = languageContext;
     }
 
-    public void setLanguageFromUser(Long userId) {
-        UserEntity user = getUserById(userId);
-        languageContext.setCurrentLanguage(user.getLanguageCode());
-    }
-
     @Transactional
-    public UserEntity updateUserLanguage(Long userId, String languageCode) {
-        UserEntity user = getUserById(userId);
-        user.setLanguageCode(languageCode);
-        languageContext.setCurrentLanguage(languageCode);
-        return userRepository.save(user);
+    public UserDTO updateUserLanguage(Long userId, String languageCode) {
+        if (!isValidLanguageCode(languageCode)) {
+            throw new IllegalArgumentException("Invalid language code: " + languageCode);
+        }
+
+        UserEntity user = getUserEntityById(userId);
+        user.setLanguageCode(languageCode.toUpperCase());
+        languageContext.setCurrentLanguage(languageCode.toUpperCase());
+        return convertToDTO(userRepository.save(user));
     }
 
-    public UserEntity getUserById(Long id) {
+    private boolean isValidLanguageCode(String languageCode) {
+        return "KOR".equalsIgnoreCase(languageCode) || "ENG".equalsIgnoreCase(languageCode);
+    }
+
+    public UserDTO getUserById(Long id) {
+        return convertToDTO(getUserEntityById(id));
+    }
+
+    private UserEntity getUserEntityById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
     }
 
     @Transactional
-    public UserEntity processOAuthUser(String email, String name, String picture, String providerId) {
+    public UserDTO processOAuthUser(String email, String name, String picture, String providerId) {
         return userRepository.findByEmail(email)
                 .map(existingUser -> updateExistingUser(existingUser, name, picture))
                 .orElseGet(() -> createNewUser(email, name, picture, providerId));
     }
-    private UserEntity updateExistingUser(UserEntity user, String name, String picture) {
+
+    private UserDTO updateExistingUser(UserEntity user, String name, String picture) {
         user.setName(name);
         user.setProfilePicture(picture);
-        // 닉네임이 없는 경우에만 새로 생성
         if (user.getNicknameId() == null) {
-            Nickname nickname = nicknameService.generateUniqueNicknameEntity();
-            user.setNicknameId(nickname.getId());
+            nicknameService.assignUniqueNickname(user);
         }
-        return userRepository.save(user);
+        return convertToDTO(userRepository.save(user));
     }
 
-    private UserEntity createNewUser(String email, String name, String picture, String providerId) {
-        Nickname nickname = nicknameService.generateUniqueNicknameEntity();
+    private UserDTO createNewUser(String email, String name, String picture, String providerId) {
         UserEntity newUser = new UserEntity();
         newUser.setEmail(email);
         newUser.setName(name);
@@ -65,16 +70,34 @@ public class UserService {
         newUser.setProvider(UserEntity.AuthProvider.google);
         newUser.setProviderId(providerId);
         newUser.setEmailVerified(true);
-        newUser.setNicknameId(nickname.getId());
         newUser.setLanguageCode(languageContext.getCurrentLanguage());
-        return userRepository.save(newUser);
+
+        UserEntity savedUser = userRepository.save(newUser);
+        nicknameService.assignUniqueNickname(savedUser);
+
+        return convertToDTO(savedUser);
     }
 
     @Transactional
-    public UserEntity updateUserNickname(Long userId, String newNickname) {
-        UserEntity user = getUserById(userId);
-        // 기존 닉네임 ID를 유지하면서 새 닉네임으로 업데이트
-        nicknameService.updateUserNickname(user.getNicknameId(), newNickname);
-        return user;
+    public UserDTO updateUserNickname(Long userId, String newNickname) {
+        UserEntity user = getUserEntityById(userId);
+        nicknameService.updateUserNickname(userId, newNickname);
+        return convertToDTO(user);
+    }
+
+    private UserDTO convertToDTO(UserEntity user) {
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getName());
+        dto.setProfilePicture(user.getProfilePicture());
+        dto.setNickname(nicknameService.getLocalizedNickname(user.getId()));
+        dto.setCustomNickname(user.getCustomNickname() != null);
+        dto.setLanguageCode(user.getLanguageCode());
+        return dto;
+    }
+
+    public String getUserLanguage(Long userId) {
+        return getUserEntityById(userId).getLanguageCode();
     }
 }

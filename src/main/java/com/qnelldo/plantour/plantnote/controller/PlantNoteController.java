@@ -47,7 +47,7 @@ public class PlantNoteController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰 형식입니다.");
             }
             String jwtToken = token.substring(7);
-            Long userId = jwtTokenProvider.getUserIdFromToken(jwtToken);
+            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(jwtToken);
 
             PlantNoteDTO plantNoteDTO = new PlantNoteDTO();
             plantNoteDTO.setTitle(title);

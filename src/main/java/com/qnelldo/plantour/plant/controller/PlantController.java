@@ -1,8 +1,11 @@
 package com.qnelldo.plantour.plant.controller;
 
+import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.common.context.LanguageContext;
+import com.qnelldo.plantour.plant.dto.LocalizedPlantDTO;
 import com.qnelldo.plantour.plant.dto.PlantDTO;
 import com.qnelldo.plantour.plant.service.PlantService;
+import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,27 +25,19 @@ public class PlantController {
 
     @Autowired
     public PlantController(PlantService plantService, LanguageContext languageContext) {
-        this.languageContext = languageContext;
         this.plantService = plantService;
+        this.languageContext = languageContext;
     }
 
     @GetMapping
-    public ResponseEntity<List<PlantDTO>> getAllPlants(@RequestParam(value = "lang", required = false) String lang,
-                                                       @RequestParam(value = "userId", required = false) Long userId) {
-        if (userId != null) {
-            plantService.setLanguageFromUser(userId);
-        } else if (lang != null) {
-            languageContext.setCurrentLanguage(lang);
-        }
-        logger.info("Fetching all plants");
+    public ResponseEntity<List<LocalizedPlantDTO>> getAllPlants() {
+        logger.info("Fetching all plants with language: {}", languageContext.getCurrentLanguage());
         return ResponseEntity.ok(plantService.getAllPlants());
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{id}")
-    public ResponseEntity<PlantDTO> getPlantById(@PathVariable Long id, @RequestParam Long userId) {
-        plantService.setLanguageFromUser(userId);
-        logger.info("Fetching plant with id: {} for user: {}", id, userId);
+    public ResponseEntity<LocalizedPlantDTO> getPlantById(@PathVariable Long id) {
+        logger.info("Fetching plant with id: {}", id);
         return ResponseEntity.ok(plantService.getPlantById(id));
     }
 }

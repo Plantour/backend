@@ -15,24 +15,20 @@ public class NicknameService {
     private final UserRepository userRepository;
 
     public NicknameService(NicknameRepository nicknameRepository, LanguageContext languageContext, UserRepository userRepository) {
-        this.userRepository = userRepository;
         this.nicknameRepository = nicknameRepository;
         this.languageContext = languageContext;
+        this.userRepository = userRepository;
     }
 
     @Transactional
-    public Nickname generateUniqueNicknameEntity() {
+    public void assignUniqueNickname(UserEntity user) {
         Nickname nickname = nicknameRepository.findRandomNickname()
                 .orElseThrow(() -> new RuntimeException("No available nicknames"));
         nickname.incrementUsageCount();
-        return nicknameRepository.save(nickname);
-    }
+        nicknameRepository.save(nickname);
 
-    @Transactional
-    public void updateUserNickname(Long userId, String newNickname) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setCustomNickname(newNickname);
+        user.setNicknameId(nickname.getId());
+        user.setNicknameCount(nickname.getUsageCount());
         userRepository.save(user);
     }
 
@@ -49,15 +45,14 @@ public class NicknameService {
 
         String languageCode = languageContext.getCurrentLanguage();
         String baseNickname = nickname.getLocalizedNickname(languageCode);
-        return baseNickname + nickname.getUsageCount();
+        return baseNickname + user.getNicknameCount();
     }
 
-
     @Transactional
-    public void setCustomNickname(Long userId, String customNickname) {
+    public void updateUserNickname(Long userId, String newNickname) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setCustomNickname(customNickname);
+        user.setCustomNickname(newNickname);
         userRepository.save(user);
     }
 
