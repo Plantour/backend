@@ -44,12 +44,18 @@ public class UserController {
             logger.info("Updating nickname for user: {} to {}", userId, newNickname);
             UserDTO updatedUser = userService.updateUserNickname(userId, newNickname);
             return ResponseEntity.ok(updatedUser);
+
         } catch (IllegalArgumentException e) {
             logger.error("Nickname update failed: {}", e.getMessage());
             if (e.getMessage().contains("Nickname already exists")) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body("Nickname already exists");
             }
             return ResponseEntity.badRequest().body(e.getMessage());
+
+        } catch (Exception e) {
+            // 모든 예외를 잡아서 로그에 기록
+            logger.error("Unexpected error during nickname update", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
         }
     }
 }
