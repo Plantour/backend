@@ -26,7 +26,7 @@ public class UserController {
 
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/me")
+    @GetMapping("/my")
     public ResponseEntity<UserDTO> getCurrentUser(@RequestHeader("Authorization") String token) {
         Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
         UserDTO user = userService.getUserById(userId);
