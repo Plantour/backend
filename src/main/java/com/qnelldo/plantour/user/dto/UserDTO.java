@@ -1,7 +1,6 @@
 package com.qnelldo.plantour.user.dto;
 
 import lombok.Data;
-import java.util.Map;
 
 @Data
 public class UserDTO {

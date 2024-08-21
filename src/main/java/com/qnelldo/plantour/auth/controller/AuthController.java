@@ -7,8 +7,6 @@ import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.auth.service.OAuth2Service;
 import com.qnelldo.plantour.common.context.LanguageContext;
 import com.qnelldo.plantour.user.dto.UserDTO;
-import com.qnelldo.plantour.user.entity.UserEntity;
-import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

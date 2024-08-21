@@ -2,6 +2,7 @@ package com.qnelldo.plantour.user.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Entity

@@ -3,8 +3,6 @@ package com.qnelldo.plantour.user.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.Map;
-
 @Entity
 @Table(name = "nicknames")
 @Data

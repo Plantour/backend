@@ -5,7 +5,6 @@ import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.quest.dto.NearbyQuestDTO;
 import com.qnelldo.plantour.quest.dto.QuestCompletionDTO;
 import com.qnelldo.plantour.quest.dto.QuestCompletionResponse;
-import com.qnelldo.plantour.quest.entity.QuestCompletionEntity;
 import com.qnelldo.plantour.quest.service.QuestCompletionService;
 import com.qnelldo.plantour.quest.service.QuestService;
 import io.swagger.v3.oas.annotations.tags.Tag;
