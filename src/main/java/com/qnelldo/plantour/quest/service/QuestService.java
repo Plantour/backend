@@ -61,66 +61,36 @@ public class QuestService {
         QuestEntity quest = questRepository.findBySeason(season)
                 .orElseThrow(() -> new RuntimeException("해당 시즌의 퀘스트를 찾을 수 없습니다."));
 
-        QuestDTO questDto = convertToQuestDTO(quest);
         String languageCode = languageContext.getCurrentLanguage();
-        Map<String, Object> plantData = getQuestPlantsBySeason(season, languageCode);
+        List<QuestCompletionResponse.PlantInfo> plants = getQuestPlantsBySeason(season, languageCode);
         List<QuestCompletionDTO> completedQuests = questCompletionService.getCompletedQuestsBySeason(userId, season);
 
-        return new QuestCompletionResponse(questDto, plantData, completedQuests);
+        QuestCompletionResponse response = new QuestCompletionResponse();
+        response.setQuestId(quest.getId());
+        response.setQuestName(quest.getName());
+        response.setSeason(season);
+        response.setPlants(plants);
+        response.setCompletedQuests(completedQuests);
+
+        return response;
     }
 
-    private QuestDTO convertToQuestDTO(QuestEntity quest) {
-        QuestDTO dto = new QuestDTO();
-        dto.setId(quest.getId());
-        dto.setName(quest.getName());
-        dto.setSeason(quest.getSeason());
-        dto.setQuestPlants(quest.getQuestPlants().stream()
-                .map(this::convertToQuestPlantDTO)
-                .collect(Collectors.toList()));
-        return dto;
-    }
-
-    private QuestPlantDTO convertToQuestPlantDTO(QuestPlantEntity questPlant) {
-        QuestPlantDTO dto = new QuestPlantDTO();
-        dto.setId(questPlant.getId());
-        dto.setPlant(convertToPlantDTO(questPlant.getPlant())); // 이 줄에서 에러 발생
-        return dto;
-    }
-
-    private PlantDTO convertToPlantDTO(PlantEntity plant) {
-        PlantDTO dto = new PlantDTO();
-        dto.setId(plant.getId());
-        dto.setName(plant.getName());
-        dto.setImageUrl(plant.getImageUrl());
-        dto.setCharacteristics1(plant.getCharacteristics1());
-        dto.setCharacteristics2(plant.getCharacteristics2());
-        dto.setCharacteristics3(plant.getCharacteristics3());
-        dto.setSeason(plant.getSeason());
-        return dto;
-    }
-
-    public Map<String, Object> getQuestPlantsBySeason(Season season, String languageCode) {
+    public List<QuestCompletionResponse.PlantInfo> getQuestPlantsBySeason(Season season, String languageCode) {
         QuestEntity mission = getQuestBySeason(season);
-        List<Map<String, Object>> plants = mission.getQuestPlants().stream()
+        return mission.getQuestPlants().stream()
                 .map(missionPlant -> {
-                    Map<String, Object> plantMap = new HashMap<>();
-
-                    plantMap.put("plantId", missionPlant.getPlant().getId());
-                    plantMap.put("plantName", missionPlant.getPlant().getName().get(languageCode));
-                    plantMap.put("imgUrl", missionPlant.getPlant().getImageUrl());
-                    plantMap.put("characteristics", List.of(
+                    QuestCompletionResponse.PlantInfo plantInfo = new QuestCompletionResponse.PlantInfo();
+                    plantInfo.setPlantId(missionPlant.getPlant().getId());
+                    plantInfo.setPlantName(missionPlant.getPlant().getName().get(languageCode));
+                    plantInfo.setImageUrl(missionPlant.getPlant().getImageUrl());
+                    plantInfo.setCharacteristics(List.of(
                             missionPlant.getPlant().getCharacteristics1().get(languageCode),
                             missionPlant.getPlant().getCharacteristics2().get(languageCode),
                             missionPlant.getPlant().getCharacteristics3().get(languageCode)
                     ));
-                    return plantMap;
+                    return plantInfo;
                 })
                 .collect(Collectors.toList());
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("season", season.name());
-        result.put("plants", plants);
-        return result;
     }
 
     public Map<String, List<NearbyQuestDTO>> getNearbyQuests(double latitude, double longitude, double radiusKm) {
