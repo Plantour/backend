@@ -48,19 +48,4 @@ public class UserController {
         }
     }
 
-//    @PreAuthorize("isAuthenticated()")
-//    @PutMapping("/language")
-//    public ResponseEntity<?> updateUserLanguage(
-//            @RequestHeader("Authorization") String token,
-//            @RequestHeader("Accept-Language") String languageCode) {
-//        try {
-//            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
-//            logger.info("Updating language for user: {} to {}", userId, languageCode);
-//            UserDTO updatedUser = userService.updateUserLanguage(userId, languageCode);
-//            return ResponseEntity.ok(updatedUser);
-//        } catch (IllegalArgumentException e) {
-//            logger.error("Invalid language code: {}", languageCode);
-//            return ResponseEntity.badRequest().body("Invalid language code");
-//        }
-//    }
 }
