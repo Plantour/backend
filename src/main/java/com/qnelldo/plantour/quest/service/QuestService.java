@@ -104,13 +104,14 @@ public class QuestService {
         List<Map<String, Object>> plants = mission.getQuestPlants().stream()
                 .map(missionPlant -> {
                     Map<String, Object> plantMap = new HashMap<>();
+
                     plantMap.put("plantId", missionPlant.getPlant().getId());
-                    plantMap.put("plantName", missionPlant.getPlant().getName().getOrDefault(languageCode, missionPlant.getPlant().getName().get("ENG")));
+                    plantMap.put("plantName", missionPlant.getPlant().getName().get(languageCode));
                     plantMap.put("imgUrl", missionPlant.getPlant().getImageUrl());
                     plantMap.put("characteristics", List.of(
-                            missionPlant.getPlant().getCharacteristics1().getOrDefault(languageCode, missionPlant.getPlant().getCharacteristics1().get("ENG")),
-                            missionPlant.getPlant().getCharacteristics2().getOrDefault(languageCode, missionPlant.getPlant().getCharacteristics2().get("ENG")),
-                            missionPlant.getPlant().getCharacteristics3().getOrDefault(languageCode, missionPlant.getPlant().getCharacteristics3().get("ENG"))
+                            missionPlant.getPlant().getCharacteristics1().get(languageCode),
+                            missionPlant.getPlant().getCharacteristics2().get(languageCode),
+                            missionPlant.getPlant().getCharacteristics3().get(languageCode)
                     ));
                     return plantMap;
                 })
