@@ -5,6 +5,7 @@ import com.qnelldo.plantour.user.dto.UserDTO;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,14 +80,25 @@ public class UserService {
 
     @Transactional
     public UserDTO updateUserNickname(Long userId, String newNickname) {
+        // 새로운 닉네임 앞뒤에 있는 따옴표를 제거
+        newNickname = newNickname.trim().replaceAll("^\"|\"$", "");
+
         // 중복 닉네임 확인을 먼저 수행
         if (userRepository.existsByCustomNickname(newNickname)) {
             throw new IllegalArgumentException("Nickname already exists: " + newNickname);
         }
 
+        // 사용자 정보 가져오기
         UserEntity user = getUserEntityById(userId);
-        nicknameService.updateUserNickname(userId, newNickname);
 
+        // 닉네임 업데이트
+        try {
+            nicknameService.updateUserNickname(userId, newNickname);
+        } catch (DataIntegrityViolationException e) {
+            // 중복 닉네임으로 인한 데이터베이스 에러 가능성 처리
+            throw new IllegalArgumentException("Nickname already exists: " + newNickname);
+        }
+        // 업데이트된 정보 반환
         return convertToDTO(user);
     }
 
