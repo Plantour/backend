@@ -5,6 +5,8 @@ import com.qnelldo.plantour.auth.dto.RefreshTokenRequest;
 import com.qnelldo.plantour.auth.entity.RefreshToken;
 import com.qnelldo.plantour.auth.service.JwtTokenProvider;
 import com.qnelldo.plantour.auth.service.OAuth2Service;
+import com.qnelldo.plantour.common.context.LanguageContext;
+import com.qnelldo.plantour.user.dto.UserDTO;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
@@ -17,17 +19,17 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
-public class    AuthController {
+public class AuthController {
 
     private final OAuth2Service oAuth2Service;
     private final JwtTokenProvider tokenProvider;
-    private final UserService userService;
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private final LanguageContext languageContext;
 
-    public AuthController(OAuth2Service oAuth2Service, JwtTokenProvider tokenProvider, UserService userService) {
+    public AuthController(OAuth2Service oAuth2Service, JwtTokenProvider tokenProvider, LanguageContext languageContext) {
         this.oAuth2Service = oAuth2Service;
         this.tokenProvider = tokenProvider;
-        this.userService = userService;
+        this.languageContext = languageContext;
     }
 
     @PostMapping("/google")
@@ -59,8 +61,10 @@ public class    AuthController {
                 .map(RefreshToken::getUserId)
                 .map(userId -> {
                     String newAccessToken = tokenProvider.createAccessToken(userId);
+                    String languageCode = languageContext.getCurrentLanguage();
+                    logger.info("Creating new access token: {}", newAccessToken);
                     // 리프레시 토큰은 재사용
-                    return ResponseEntity.ok(new AuthResponse(newAccessToken, requestRefreshToken));
+                    return ResponseEntity.ok(new AuthResponse(newAccessToken, requestRefreshToken, languageCode));
                 })
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
     }
@@ -84,16 +88,21 @@ public class    AuthController {
         try {
             String accessToken = oAuth2Service.getAccessToken(code);
             logger.info("Obtained access token from Google");
-            UserEntity user = oAuth2Service.getUserInfo(accessToken);
+            UserDTO user = oAuth2Service.getUserInfo(accessToken);
             logger.info("Retrieved user info: {}", user);
 
-            // 사용자 언어 설정을 가져와서 설정
-            userService.setLanguageFromUser(user.getId());
+            // 언어 설정은 인터셉터에서 처리되므로 여기서는 제거합니다.
+            // userService.setLanguageFromUser(user.getId());
 
             String jwt = tokenProvider.createAccessToken(user.getId());
             String refreshToken = tokenProvider.createRefreshToken(user.getId());
+            String languageCode = user.getLanguageCode();
 
-            return ResponseEntity.ok(new AuthResponse(jwt, refreshToken));
+            logger.info("Created JWT token: {}", jwt);
+            logger.info("Created refresh token: {}", refreshToken);
+            logger.info("Language code: {}", languageCode);
+
+            return ResponseEntity.ok(new AuthResponse(jwt, refreshToken, languageCode));
         } catch (Exception e) {
             logger.error("인증 처리 중 오류 발생", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

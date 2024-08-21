@@ -2,6 +2,7 @@ package com.qnelldo.plantour.auth.service;
 
 import com.qnelldo.plantour.auth.dto.GoogleUserInfo;
 import com.qnelldo.plantour.auth.dto.TokenResponse;
+import com.qnelldo.plantour.user.dto.UserDTO;
 import com.qnelldo.plantour.user.entity.UserEntity;
 import com.qnelldo.plantour.user.service.NicknameService;
 import com.qnelldo.plantour.user.service.UserService;
@@ -67,7 +68,7 @@ public class OAuth2Service {
         }
     }
 
-    public UserEntity getUserInfo(String accessToken) {
+    public UserDTO getUserInfo(String accessToken) {
         String url = "https://www.googleapis.com/oauth2/v2/userinfo";
 
         HttpHeaders headers = new HttpHeaders();

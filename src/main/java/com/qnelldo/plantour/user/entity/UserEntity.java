@@ -37,6 +37,9 @@ public class UserEntity {
     @Column(name = "nickname_id")
     private Long nicknameId;
 
+    @Column(name = "nickname_count")
+    private Integer nicknameCount;
+
     @Column(name = "custom_nickname")
     private String customNickname;
 
