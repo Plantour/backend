@@ -96,7 +96,7 @@ public class AuthController {
 
             String jwt = tokenProvider.createAccessToken(user.getId());
             String refreshToken = tokenProvider.createRefreshToken(user.getId());
-            String languageCode = user.getLanguageCode();
+            String languageCode = languageContext.getCurrentLanguage();
 
             logger.info("Created JWT token: {}", jwt);
             logger.info("Created refresh token: {}", refreshToken);
