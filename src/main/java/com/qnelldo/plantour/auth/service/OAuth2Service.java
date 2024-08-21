@@ -3,8 +3,6 @@ package com.qnelldo.plantour.auth.service;
 import com.qnelldo.plantour.auth.dto.GoogleUserInfo;
 import com.qnelldo.plantour.auth.dto.TokenResponse;
 import com.qnelldo.plantour.user.dto.UserDTO;
-import com.qnelldo.plantour.user.entity.UserEntity;
-import com.qnelldo.plantour.user.service.NicknameService;
 import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

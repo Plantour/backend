@@ -2,11 +2,8 @@ package com.qnelldo.plantour.plant.service;
 
 import com.qnelldo.plantour.common.context.LanguageContext;
 import com.qnelldo.plantour.plant.dto.LocalizedPlantDTO;
-import com.qnelldo.plantour.plant.dto.PlantDTO;
 import com.qnelldo.plantour.plant.entity.PlantEntity;
 import com.qnelldo.plantour.plant.repository.PlantRepository;
-import com.qnelldo.plantour.user.entity.UserEntity;
-import com.qnelldo.plantour.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

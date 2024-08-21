@@ -24,7 +24,7 @@ public class LanguageInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String acceptLanguage = request.getHeader("Accept-Language");
+        String acceptLanguage = request.getHeader("X-User-Language");
         String token = request.getHeader("Authorization");
 
         // Default language
