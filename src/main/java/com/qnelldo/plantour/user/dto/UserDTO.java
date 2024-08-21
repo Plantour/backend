@@ -10,6 +10,6 @@ public class UserDTO {
     private String name;
     private String profilePicture;
     private String nickname;
-    private boolean isCustomNickname;
+    private String customNickname;
     private String languageCode;
 }

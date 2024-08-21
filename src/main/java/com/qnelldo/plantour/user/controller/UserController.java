@@ -1,7 +1,6 @@
 package com.qnelldo.plantour.user.controller;
 
 import com.qnelldo.plantour.auth.service.JwtTokenProvider;
-import com.qnelldo.plantour.common.context.LanguageContext;
 import com.qnelldo.plantour.user.dto.UserDTO;
 import com.qnelldo.plantour.user.service.UserService;
 import org.slf4j.Logger;
@@ -32,6 +31,7 @@ public class UserController {
         UserDTO user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
+    //왜 안하는데!
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/nickname")
@@ -49,19 +49,4 @@ public class UserController {
         }
     }
 
-//    @PreAuthorize("isAuthenticated()")
-//    @PutMapping("/language")
-//    public ResponseEntity<?> updateUserLanguage(
-//            @RequestHeader("Authorization") String token,
-//            @RequestHeader("Accept-Language") String languageCode) {
-//        try {
-//            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
-//            logger.info("Updating language for user: {} to {}", userId, languageCode);
-//            UserDTO updatedUser = userService.updateUserLanguage(userId, languageCode);
-//            return ResponseEntity.ok(updatedUser);
-//        } catch (IllegalArgumentException e) {
-//            logger.error("Invalid language code: {}", languageCode);
-//            return ResponseEntity.badRequest().body("Invalid language code");
-//        }
-//    }
 }
