@@ -45,17 +45,19 @@ public class QuestController {
             season = questService.getCurrentSeason();
         }
 
+        Long userId = null;
         if (token != null && token.startsWith("Bearer ")) {
-            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
-            QuestCompletionResponse response = questService.getQuestDataBySeason(season, userId);
-
-            logger.info("퀘스트 데이터 조회 결과: {}", response);
-
-            return ResponseEntity.ok(response);
-        } else {
-            QuestCompletionResponse response = questService.getQuestDataBySeason(season, null);
-            return ResponseEntity.ok(response);
+            try {
+                userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
+            } catch (Exception e) {
+                logger.warn("Invalid token: {}", e.getMessage());
+                // 토큰이 유효하지 않더라도 계속 진행
+            }
         }
+
+        QuestCompletionResponse response = questService.getQuestDataBySeason(season, userId);
+        logger.info("퀘스트 데이터 조회 결과: {}", response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)

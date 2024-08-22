@@ -35,15 +35,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                Long userId = tokenProvider.getUserIdFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                if (tokenProvider.validateToken(jwt)) {
+                    Long userId = tokenProvider.getUserIdFromToken(jwt);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userId, null, null);
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userId, null, null);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                logger.debug("Set Authentication to security context for '{}', uri: {}", userId, request.getRequestURI());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    logger.debug("Set Authentication to security context for '{}', uri: {}", userId, request.getRequestURI());
+                } else {
+                    logger.warn("Invalid JWT token");
+                }
+            } else {
+                logger.debug("No JWT token found in request");
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
@@ -65,6 +71,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return excludedPaths.stream().anyMatch(path::startsWith);
+        boolean shouldNotFilter = excludedPaths.stream().anyMatch(path::startsWith);
+        if (shouldNotFilter) {
+            logger.debug("Skipping JWT authentication for path: {}", path);
+        }
+        return shouldNotFilter;
     }
 }

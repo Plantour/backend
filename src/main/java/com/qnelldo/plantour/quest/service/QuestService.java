@@ -65,7 +65,9 @@ public class QuestService {
         logger.info("Current language code: {}", languageCode);  // 로깅 추가
 
         List<QuestCompletionResponse.PlantInfo> plants = getQuestPlantsBySeason(season, languageCode);
-        List<QuestCompletionDTO> completedQuests = questCompletionService.getCompletedQuestsBySeason(userId, season);
+        List<QuestCompletionDTO> completedQuests = userId != null ?
+                questCompletionService.getCompletedQuestsBySeason(userId, season) :
+                Collections.emptyList();
 
         QuestCompletionResponse response = new QuestCompletionResponse();
         response.setQuestId(quest.getId());
