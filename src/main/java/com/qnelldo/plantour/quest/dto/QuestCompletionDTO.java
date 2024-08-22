@@ -11,6 +11,7 @@ public class QuestCompletionDTO {
     private Long questId;
     private int puzzleNumber;
     private Long plantId;
+    private String plantName;
     private String content;
     private Double latitude;
     private Double longitude;
