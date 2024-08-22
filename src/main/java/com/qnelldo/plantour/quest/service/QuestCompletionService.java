@@ -1,5 +1,6 @@
 package com.qnelldo.plantour.quest.service;
 
+import com.qnelldo.plantour.common.context.LanguageContext;
 import com.qnelldo.plantour.common.enums.Season;
 import com.qnelldo.plantour.plant.entity.PlantEntity;
 import com.qnelldo.plantour.plant.repository.PlantRepository;
@@ -25,16 +26,18 @@ public class QuestCompletionService {
     private final QuestCompletionRepository questCompletionRepository;
     private final QuestRepository questRepository;
     private final PlantRepository plantRepository;
+    private final LanguageContext languageContext;
 
     @Autowired
     public QuestCompletionService(UserRepository userRepository,
                                   QuestCompletionRepository questCompletionRepository,
                                   QuestRepository questRepository,
-                                  PlantRepository plantRepository) {
+                                  PlantRepository plantRepository, LanguageContext languageContext) {
         this.userRepository = userRepository;
         this.questCompletionRepository = questCompletionRepository;
         this.questRepository = questRepository;
         this.plantRepository = plantRepository;
+        this.languageContext = languageContext;
     }
 
 
@@ -91,11 +94,13 @@ public class QuestCompletionService {
 
     private QuestCompletionDTO convertToDTO(QuestCompletionEntity entity) {
         QuestCompletionDTO dto = new QuestCompletionDTO();
+        String languageCode = languageContext.getCurrentLanguage();
         dto.setId(entity.getId());
         dto.setUserId(entity.getUser().getId());
         dto.setQuestId(entity.getQuest().getId());
         dto.setPuzzleNumber(entity.getPuzzleNumber());
         dto.setPlantId(entity.getPlant().getId());
+        dto.setPlantName(entity.getPlant().getName().get(languageCode));
         dto.setContent(entity.getContent());
         dto.setLatitude(entity.getLatitude());
         dto.setLongitude(entity.getLongitude());
