@@ -5,6 +5,8 @@ import com.qnelldo.plantour.common.context.LanguageContext;
 import com.qnelldo.plantour.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -15,6 +17,7 @@ public class LanguageInterceptor implements HandlerInterceptor {
     private final LanguageContext languageContext;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
+    private Logger logger = LoggerFactory.getLogger(LanguageInterceptor.class);
 
     public LanguageInterceptor(LanguageContext languageContext, JwtTokenProvider jwtTokenProvider, UserService userService) {
         this.languageContext = languageContext;
@@ -27,27 +30,26 @@ public class LanguageInterceptor implements HandlerInterceptor {
         String languageHeader = request.getHeader("X-User-Language");
         String token = request.getHeader("Authorization");
 
-        // 유효한 언어 코드 검증 (KOR 또는 ENG만 허용)
         if (languageHeader != null && (languageHeader.equalsIgnoreCase("KOR") || languageHeader.equalsIgnoreCase("ENG"))) {
             languageContext.setCurrentLanguage(languageHeader.toUpperCase());
-
         } else {
-            languageContext.setCurrentLanguage("ENG");  // 기본값 설정
+            languageContext.setCurrentLanguage("ENG");
         }
 
-        // 로그인된 사용자의 경우 언어 설정을 DB에 저장
         if (token != null && token.startsWith("Bearer ")) {
-            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
-
-            if (userId != null) {
-                String userLanguage = userService.getUserLanguage(userId);
-
-                if (!userLanguage.equalsIgnoreCase(languageContext.getCurrentLanguage())) {
-                    userService.updateUserLanguage(userId, languageContext.getCurrentLanguage());
-
-                } else {
-                    languageContext.setCurrentLanguage(userLanguage);
+            try {
+                Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
+                if (userId != null) {
+                    String userLanguage = userService.getUserLanguage(userId);
+                    if (!userLanguage.equalsIgnoreCase(languageContext.getCurrentLanguage())) {
+                        userService.updateUserLanguage(userId, languageContext.getCurrentLanguage());
+                    } else {
+                        languageContext.setCurrentLanguage(userLanguage);
+                    }
                 }
+            } catch (Exception e) {
+                // 토큰 파싱 실패 시 로그만 남기고 계속 진행
+                logger.warn("Failed to parse token: {}", e.getMessage());
             }
         }
         return true;
