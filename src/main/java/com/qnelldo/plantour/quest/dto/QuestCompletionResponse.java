@@ -9,7 +9,7 @@ import java.util.List;
 public class QuestCompletionResponse {
     private Long questId;
     private String questName;
-    private Season season;
+    private String season; // Season을 String으로 변경
     private List<PlantInfo> plants;
     private List<QuestCompletionDTO> completedQuests;
 

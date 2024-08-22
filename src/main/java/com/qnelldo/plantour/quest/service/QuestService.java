@@ -62,13 +62,15 @@ public class QuestService {
                 .orElseThrow(() -> new RuntimeException("해당 시즌의 퀘스트를 찾을 수 없습니다."));
 
         String languageCode = languageContext.getCurrentLanguage();
+        logger.info("Current language code: {}", languageCode);  // 로깅 추가
+
         List<QuestCompletionResponse.PlantInfo> plants = getQuestPlantsBySeason(season, languageCode);
         List<QuestCompletionDTO> completedQuests = questCompletionService.getCompletedQuestsBySeason(userId, season);
 
         QuestCompletionResponse response = new QuestCompletionResponse();
         response.setQuestId(quest.getId());
         response.setQuestName(quest.getName());
-        response.setSeason(season);
+        response.setSeason(season.getName(languageCode));  // 언어에 맞는 시즌 이름 설정
         response.setPlants(plants);
         response.setCompletedQuests(completedQuests);
 
