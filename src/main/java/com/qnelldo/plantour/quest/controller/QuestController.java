@@ -36,21 +36,26 @@ public class QuestController {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<QuestCompletionResponse> getQuestData(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestParam(required = false) Season season) {
         logger.info("시즌에 따른 퀘스트 데이터 조회 요청: {}", season);
         if (season == null) {
             season = questService.getCurrentSeason();
         }
-        Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
-        QuestCompletionResponse response = questService.getQuestDataBySeason(season, userId);
 
-        logger.info("퀘스트 데이터 조회 결과: {}", response);
+        if (token != null && token.startsWith("Bearer ")) {
+            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
+            QuestCompletionResponse response = questService.getQuestDataBySeason(season, userId);
 
-        return ResponseEntity.ok(response);
+            logger.info("퀘스트 데이터 조회 결과: {}", response);
+
+            return ResponseEntity.ok(response);
+        } else {
+            QuestCompletionResponse response = questService.getQuestDataBySeason(season, null);
+            return ResponseEntity.ok(response);
+        }
     }
 
     @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
@@ -66,7 +71,7 @@ public class QuestController {
     }
 
     @GetMapping("/nearby")
-    public ResponseEntity<Map<String,List<NearbyQuestDTO>>> getNearbyQuests(
+    public ResponseEntity<Map<String, List<NearbyQuestDTO>>> getNearbyQuests(
             @RequestParam double latitude,
             @RequestParam double longitude) {
 
