@@ -43,11 +43,15 @@ public class PlantNoteController {
             @RequestPart("image") MultipartFile image
     ) {
         try {
-            if (!token.startsWith("Bearer ")) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("유효하지 않은 토큰 형식입니다.");
+            logger.info("Received token: {}", token);
+
+            Long userId;
+            try {
+                userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(token);
+            } catch (Exception e) {
+                logger.error("Token extraction failed", e);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("토큰 추출 실패: " + e.getMessage());
             }
-            String jwtToken = token.substring(7);
-            Long userId = jwtTokenProvider.extractUserIdFromAuthorizationHeader(jwtToken);
 
             PlantNoteDTO plantNoteDTO = new PlantNoteDTO();
             plantNoteDTO.setTitle(title);
