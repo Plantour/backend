@@ -41,7 +41,7 @@ public class PlantNoteEntity {
     @Column(nullable = false)
     private Double longitude;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime completedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

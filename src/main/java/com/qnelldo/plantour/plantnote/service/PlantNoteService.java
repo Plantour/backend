@@ -57,7 +57,7 @@ public class PlantNoteService {
         entity.setCustomPlantInfo(dto.getCustomPlantInfo());
         entity.setLatitude(dto.getLatitude());
         entity.setLongitude(dto.getLongitude());
-        entity.setCreatedAt(LocalDateTime.now());
+        entity.setCompletedAt(LocalDateTime.now());
 
         entity.setUser(userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + userId)));
@@ -90,7 +90,7 @@ public class PlantNoteService {
                             note.getContent(),
                             note.getLatitude(),
                             note.getLongitude(),
-                            note.getCreatedAt(),
+                            note.getCompletedAt(),
                             baseUrl + "/api/plant-notes/image/" + note.getId(),
                             note.getUser().getId(),
                             note.getUser().getName(),

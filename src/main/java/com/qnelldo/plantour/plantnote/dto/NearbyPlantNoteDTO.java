@@ -13,13 +13,13 @@ public class NearbyPlantNoteDTO {
     private String content;
     private Double latitude;
     private Double longitude;
-    private LocalDateTime createdAt;
+    private LocalDateTime completedAt;
     private String imageUrl;
 
     // 사용자 정보
     private Long userId;
     private String userName;
-    private String userNickname; // 닉네임 추가
+    private String nickname; // 닉네임 추가
 
     // 식물 정보
     private String infoType;  // plantInfoType 대신
